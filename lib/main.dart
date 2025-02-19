@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:plantfit/splashscreen.dart';
-import 'package:plantfit/scan.dart';
+import 'package:plantfit/view/scan.dart';
+import 'package:plantfit/view/login.dart';
+import 'package:plantfit/view/splashscreen.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -13,11 +15,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: '/', // Halaman awal SplashScreen
-      routes: {
-        '/': (context) => SplashScreen(),
-        '/scan': (context) => Scanner(), // Tambahkan rute ke halaman Scan
-      },
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: LoginPage(),
     );
   }
 }

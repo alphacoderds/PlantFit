@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:camera/camera.dart';
 
 class Scanner extends StatefulWidget {
   const Scanner({Key? key}) : super(key: key);
@@ -13,31 +12,48 @@ class Scanner extends StatefulWidget {
 
 class _ScannerState extends State<Scanner> {
   File? _selectedImage;
+  CameraController? _cameraController;
+  List<CameraDescription>? _cameras;
 
-  Future<void> scanBarcodeNormal() async {
-    String barcodeScanRes;
-    try {
-      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
-        '#ff6666', // Warna garis scan
-        'Cancel', // Tombol batal
-        true, // Format kamera
-        ScanMode.BARCODE, // Mode scan (BARCODE atau QRCODE)
-      );
+  @override
+  void initState() {
+    super.initState();
+    _initializeCamera();
+  }
 
-      if (barcodeScanRes != '-1') {
-        // Jika berhasil scan (bukan dibatalkan)
-        debugPrint("Hasil scan: $barcodeScanRes");
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
+  }
 
-        // Menampilkan hasil scan dengan SnackBar
+  Future<void> _initializeCamera() async {
+    _cameras = await availableCameras();
+    if (_cameras != null && _cameras!.isNotEmpty) {
+      _cameraController = CameraController(_cameras![0], ResolutionPreset.medium);
+      await _cameraController!.initialize();
+    }
+  }
+
+  Future<void> captureImageFromCamera() async {
+    if (_cameraController != null && _cameraController!.value.isInitialized) {
+      try {
+        final image = await _cameraController!.takePicture();
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Hasil scan: $barcodeScanRes'),
-            duration: const Duration(seconds: 3),
+          const SnackBar(
+            content: Text('Gambar berhasil diambil'),
+            duration: Duration(seconds: 3),
           ),
         );
+      } catch (e) {
+        debugPrint("Error capturing image: $e");
       }
-    } on PlatformException {
-      debugPrint("Error: Failed to scan barcode.");
+    } else {
+      debugPrint("Kamera tidak tersedia.");
     }
   }
 
@@ -73,7 +89,7 @@ class _ScannerState extends State<Scanner> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton(
-              onPressed: scanBarcodeNormal,
+              onPressed: captureImageFromCamera,
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.all(25),
                 backgroundColor: Colors.white,
@@ -84,13 +100,13 @@ class _ScannerState extends State<Scanner> {
               child: const Column(
                 children: [
                   Icon(
-                    Icons.qr_code_scanner,
+                    Icons.camera_alt,
                     color: Colors.green,
                     size: 50,
                   ),
                   SizedBox(height: 10),
                   Text(
-                    'Scan Kamera',
+                    'Ambil Gambar dengan Kamera',
                     style: TextStyle(color: Colors.green, fontSize: 18),
                   ),
                 ],
