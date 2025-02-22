@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 
-class Scanner extends StatefulWidget {
-  const Scanner({Key? key}) : super(key: key);
+class ScannerPage extends StatefulWidget {
+  const ScannerPage({Key? key}) : super(key: key);
 
   @override
   _ScannerState createState() => _ScannerState();
 }
 
-class _ScannerState extends State<Scanner> {
+class _ScannerState extends State<ScannerPage> {
   File? _selectedImage;
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
@@ -157,5 +157,5 @@ class _ScannerState extends State<Scanner> {
 }
 
 void main() {
-  runApp(const MaterialApp(home: Scanner()));
+  runApp(const MaterialApp(home: ScannerPage()));
 }

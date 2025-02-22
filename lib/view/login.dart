@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // Tambahkan ini
+import 'package:google_fonts/google_fonts.dart'; 
 import 'package:plantfit/view/scan.dart';
 import 'package:plantfit/view/register.dart';
 
@@ -37,13 +37,16 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width; // Lebar layar
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           'Login Page',
           style: GoogleFonts.lora(
             fontWeight: FontWeight.w600,
-            fontSize: 20,
+            fontSize: screenWidth * 0.05,
             color: Color(0xFF3E6606),
           ),
         ),
@@ -53,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       backgroundColor: const Color(0xFFF5FBEF),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(screenWidth * 0.05),
         child: Form(
           key: _formKey,
           child: Column(
@@ -62,17 +65,18 @@ class _LoginPageState extends State<LoginPage> {
               Center(
                 child: Image.asset(
                   'assets/images/plantfit.png',
-                  height: 120,
-                  width: 120,
+                  height: screenHeight * 0.15,
+                  width: screenHeight * 0.15,
                 ),
               ),
+              SizedBox(height: screenHeight * 0.02),
               Center(
                 child: Transform.translate(
                   offset: const Offset(0, -50),
                   child: Image.asset(
                     'assets/images/scan.png',
-                    height: 280,
-                    width: 280,
+                    height: screenHeight * 0.3,
+                    width: screenHeight * 0.3,
                   ),
                 ),
               ),
@@ -109,8 +113,7 @@ class _LoginPageState extends State<LoginPage> {
                         return null;
                       },
                     ),
-                    const SizedBox(
-                        height: 10.0), // Kurangi jarak antara Email & Password
+                    SizedBox(height: screenHeight * 0.02),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
@@ -119,18 +122,11 @@ class _LoginPageState extends State<LoginPage> {
                         prefixIcon: const Icon(Icons.lock),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(),
                         ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: screenWidth * 0.04,
+                          vertical: screenHeight * 0.015,
                         ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: const BorderSide(width: 1.5),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 12),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -144,10 +140,10 @@ class _LoginPageState extends State<LoginPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 50.0),
+              SizedBox(height: screenHeight * 0.05),
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: screenHeight * 0.06,
                 child: ElevatedButton(
                   onPressed: _login,
                   style: ElevatedButton.styleFrom(
@@ -158,24 +154,28 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     elevation: 0,
                   ),
-                  child: const Text(
+                  child: Text(
                     'Log In',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(
-                        height: 10.0),
+              SizedBox(height: screenHeight * 0.02),
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: screenHeight * 0.06,
                 child: OutlinedButton(
                   onPressed: () {
-                    // Tambahkan aksi sign-up di sini
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const RegisterPage(),
+                      ),
+                    );
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
@@ -184,10 +184,10 @@ class _LoginPageState extends State<LoginPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Sign Up',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF4D6A3F), // Warna teks hijau tua
                     ),

@@ -1,30 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:plantfit/view/riwayat.dart';
 import 'package:plantfit/view/scan.dart';
 import 'package:plantfit/view/register.dart';
 import 'package:plantfit/view/login.dart';
+import 'package:plantfit/view/dashboard.dart';
 import 'package:plantfit/view/daftarjenis.dart';
 
-class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+class RiwayatPage extends StatefulWidget {
+  const RiwayatPage({super.key});
 
-  _DashboardPageState createState() => _DashboardPageState();
+  _RiwayatPageState createState() => _RiwayatPageState();
 }
 
-class _DashboardPageState extends State<DashboardPage> {
+class _RiwayatPageState extends State<RiwayatPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
+    DashboardPage(),
     DaftarJenisTanahPage(), 
     ScannerPage(),
     RegisterPage(), 
     LoginPage(), 
-    RiwayatPage(),
   ];
 
   void _onItemTapped(int index) {
-    if (index == _selectedIndex) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -48,7 +47,7 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
             SizedBox(width: 7),
             Text(
-              'Dashboard',
+              'Daftar Jenis Tanah',
               style: GoogleFonts.lora(
                 fontWeight: FontWeight.w600,
                 fontSize: screenWidth * 0.05,
@@ -63,72 +62,12 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Grid Kategori Tanah
-            SizedBox(
-              height: 140,
-              child: GridView.builder(
-                scrollDirection: Axis.horizontal,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 1,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: 1.5,
-                ),
-                itemCount: 5, // Bisa ditambah sesuai jumlah kategori
-                itemBuilder: (context, index) {
-                  List<String> titles = [
-                    'Alluvial',
-                    'Litosol',
-                    'Laterit',
-                    'Organosol',
-                    'Regosol'
-                  ];
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 5,
-                          offset: Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.image, size: 50), // Placeholder gambar
-                        SizedBox(height: 5),
-                        Text(
-                          titles[index],
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(height: 20),
-
-            // Judul Artikel
-            Text(
-              'Artikel',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
             SizedBox(height: 10),
 
             // List Artikel
             Expanded(
               child: ListView.builder(
-                itemCount: 5, // Bisa ditambah sesuai jumlah artikel
+                itemCount: 5,
                 itemBuilder: (context, index) {
                   return Container(
                     margin: EdgeInsets.only(bottom: 10),
