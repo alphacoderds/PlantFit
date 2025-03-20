@@ -1,40 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:plantfit/view/riwayat.dart';
-import 'package:plantfit/view/scan.dart';
 import 'package:plantfit/view/register.dart';
-import 'package:plantfit/view/login.dart';
 import 'package:plantfit/view/daftarjenis.dart';
+import 'package:plantfit/view/scan.dart';
+import 'package:plantfit/view/riwayat.dart';
+import 'package:plantfit/view/profile.dart';
+import 'package:plantfit/view/homepage.dart';
 
 class DashboardPage extends StatefulWidget {
-  const DashboardPage({super.key});
+  const DashboardPage({Key? key}) : super(key: key);
 
+  @override
   _DashboardPageState createState() => _DashboardPageState();
 }
 
 class _DashboardPageState extends State<DashboardPage> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _pages = [
-    DaftarJenisTanahPage(), 
-    ScannerPage(),
-    RegisterPage(), 
-    LoginPage(), 
-    RiwayatPage(),
-  ];
-
-  void _onItemTapped(int index) {
-    if (index == _selectedIndex) return;
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
-
     return Scaffold(
       backgroundColor: Color(0xFFEFF5E3),
       appBar: AppBar(
@@ -44,14 +27,14 @@ class _DashboardPageState extends State<DashboardPage> {
           children: [
             Image.asset(
               'assets/images/plantfit.png',
-              height: 70,
+              height: 50,
             ),
-            SizedBox(width: 7),
+            SizedBox(width: 10),
             Text(
               'Dashboard',
               style: GoogleFonts.lora(
-                fontWeight: FontWeight.w600,
-                fontSize: screenWidth * 0.05,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
                 color: Color(0xFF3E6606),
               ),
             ),
@@ -66,55 +49,52 @@ class _DashboardPageState extends State<DashboardPage> {
             // Grid Kategori Tanah
             SizedBox(
               height: 140,
-              child: GridView.builder(
+              child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 1,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: 1.5,
-                ),
-                itemCount: 5, // Bisa ditambah sesuai jumlah kategori
+                itemCount: 5,
                 itemBuilder: (context, index) {
                   List<String> titles = [
-                    'Alluvial',
-                    'Litosol',
+                    'Regosol',
                     'Laterit',
-                    'Organosol',
-                    'Regosol'
+                    'Aluvial',
+                    'Grumosol',
+                    'Vertisol'
                   ];
-                  return Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(10),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 5,
-                          offset: Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.image, size: 50), // Placeholder gambar
-                        SizedBox(height: 5),
-                        Text(
-                          titles[index],
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Container(
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 5,
+                            offset: Offset(2, 2),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.landscape, size: 50, color: Colors.green),
+                          SizedBox(height: 5),
+                          Text(
+                            titles[index],
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
             ),
             SizedBox(height: 20),
-
-            // Judul Artikel
             Text(
               'Artikel',
               style: TextStyle(
@@ -124,17 +104,15 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
             ),
             SizedBox(height: 10),
-
-            // List Artikel
             Expanded(
               child: ListView.builder(
-                itemCount: 5, // Bisa ditambah sesuai jumlah artikel
+                itemCount: 5,
                 itemBuilder: (context, index) {
                   return Container(
                     margin: EdgeInsets.only(bottom: 10),
-                    padding: EdgeInsets.all(10),
+                    padding: EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.lightGreen[200],
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
@@ -147,33 +125,34 @@ class _DashboardPageState extends State<DashboardPage> {
                     child: Row(
                       children: [
                         Container(
-                          height: 120,
+                          height: 100,
                           width: 100,
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: Colors.grey[200],
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(Icons.image, size: 50),
+                          child: Icon(Icons.article,
+                              size: 50, color: Colors.green),
                         ),
                         SizedBox(width: 10),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                height: 10,
-                                color: Colors.green[900],
-                                margin: EdgeInsets.symmetric(vertical: 2),
+                              Text(
+                                'Judul Artikel $index',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
                               ),
-                              Container(
-                                height: 10,
-                                color: Colors.green[900],
-                                margin: EdgeInsets.symmetric(vertical: 2),
-                              ),
-                              Container(
-                                height: 10,
-                                color: Colors.green[900],
-                                margin: EdgeInsets.symmetric(vertical: 2),
+                              SizedBox(height: 5),
+                              Text(
+                                'Deskripsi singkat artikel ini...',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[700],
+                                ),
                               ),
                             ],
                           ),
@@ -186,38 +165,6 @@ class _DashboardPageState extends State<DashboardPage> {
             ),
           ],
         ),
-      ),
-
-      // Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.lightGreen[200],
-        selectedItemColor: Colors.green[900],
-        unselectedItemColor: Colors.black54,
-        selectedFontSize: 14,
-        unselectedFontSize: 13,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Beranda",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: "Jenis",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "Deteksi",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: "Riwayat",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
-        ],
       ),
     );
   }

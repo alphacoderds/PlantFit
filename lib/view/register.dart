@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; // Tambahkan ini
-import 'package:plantfit/view/scan.dart';
+import 'package:google_fonts/google_fonts.dart'; 
 import 'package:plantfit/view/login.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -81,7 +80,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
               Transform.translate(
-                offset: const Offset(0, -80), // Menggeser form ke atas
+                offset: const Offset(0, -80), 
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -115,7 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     SizedBox(
                         height: screenHeight *
-                            0.02), // Kurangi jarak antara Email & Password
+                            0.02),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
@@ -141,7 +140,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     ),
                     SizedBox(
                         height: screenHeight *
-                            0.02), // Kurangi jarak antara Email & Password
+                            0.02), 
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
@@ -202,7 +201,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
-                        color: Color(0xFF4D6A3F)), // Border hijau tua
+                        color: Color(0xFF4D6A3F)), 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -212,7 +211,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF4D6A3F), // Warna teks hijau tua
+                      color: Color(0xFF4D6A3F), 
                     ),
                   ),
                 ),

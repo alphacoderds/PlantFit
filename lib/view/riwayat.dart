@@ -1,14 +1,34 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:plantfit/view/scan.dart';
 import 'package:plantfit/view/register.dart';
 import 'package:plantfit/view/login.dart';
-import 'package:plantfit/view/dashboard.dart';
 import 'package:plantfit/view/daftarjenis.dart';
+import 'package:plantfit/view/scan.dart';
+import 'package:plantfit/view/riwayatModel.dart';
+
+class RiwayatItem {
+  final String label;
+  final String latinName;
+  final double confidence;
+  final String description;
+  final String handling;
+  final String imagePath;
+  final DateTime timestamp;
+
+  RiwayatItem({
+    required this.label,
+    required this.latinName,
+    required this.confidence,
+    required this.description,
+    required this.handling,
+    required this.imagePath,
+    required this.timestamp,
+  });
+}
 
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
-
   _RiwayatPageState createState() => _RiwayatPageState();
 }
 
@@ -16,14 +36,15 @@ class _RiwayatPageState extends State<RiwayatPage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    DashboardPage(),
-    DaftarJenisTanahPage(), 
+    DaftarJenisPage(),
     ScannerPage(),
-    RegisterPage(), 
-    LoginPage(), 
+    RegisterPage(),
+    LoginPage(),
+    RiwayatPage(),
   ];
 
   void _onItemTapped(int index) {
+    if (index == _selectedIndex) return;
     setState(() {
       _selectedIndex = index;
     });
@@ -31,133 +52,75 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width;
-    double screenHeight = MediaQuery.of(context).size.height;
+    List<RiwayatItem> riwayatList = RiwayatStorage.getAllRiwayat();
 
     return Scaffold(
-      backgroundColor: Color(0xFFEFF5E3),
+      backgroundColor: const Color(0xFFEFF5E3),
       appBar: AppBar(
-        backgroundColor: Color(0xFFEFF5E3),
+        backgroundColor: const Color(0xFFEFF5E3),
         elevation: 0,
         title: Row(
           children: [
             Image.asset(
-              'assets/images/plantfit.png',
-              height: 70,
+              'assets/images/plantfit.png', 
+              width: 50,
+              height: 50,
             ),
-            SizedBox(width: 7),
+            const SizedBox(width: 10),
             Text(
-              'Daftar Jenis Tanah',
+              "Riwayat Deteksi",
               style: GoogleFonts.lora(
-                fontWeight: FontWeight.w600,
-                fontSize: screenWidth * 0.05,
-                color: Color(0xFF3E6606),
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: const Color(0xFF3E6606),
               ),
             ),
           ],
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 10),
-
-            // List Artikel
-            Expanded(
-              child: ListView.builder(
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: EdgeInsets.only(bottom: 10),
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.lightGreen[200],
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          blurRadius: 4,
-                          offset: Offset(2, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          height: 120,
-                          width: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(Icons.image, size: 50),
-                        ),
-                        SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                height: 10,
-                                color: Colors.green[900],
-                                margin: EdgeInsets.symmetric(vertical: 2),
-                              ),
-                              Container(
-                                height: 10,
-                                color: Colors.green[900],
-                                margin: EdgeInsets.symmetric(vertical: 2),
-                              ),
-                              Container(
-                                height: 10,
-                                color: Colors.green[900],
-                                margin: EdgeInsets.symmetric(vertical: 2),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
+      body: riwayatList.isEmpty
+          ? const Center(
+              child: Text(
+                "Belum ada riwayat deteksi.",
+                style: TextStyle(
+                  fontSize: 16,
+                ),
               ),
+            )
+          : ListView.builder(
+              itemCount: riwayatList.length,
+              itemBuilder: (context, index) {
+                final item = riwayatList[index];
+                return Card(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  elevation: 3,
+                  child: ListTile(
+                    leading: Image.file(
+                      File(item.imagePath),
+                      width: 60,
+                      height: 60,
+                      fit: BoxFit.cover,
+                    ),
+                    title: Text(
+                      item.label,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                        color: Color(0xFF3E6606),
+                      ),
+                    ),
+                    subtitle: Text(
+                      "Akurasi: ${(item.confidence * 100).toStringAsFixed(2)}%\n"
+                      "Waktu: ${item.timestamp.toLocal()}",
+                      style: const TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
-          ],
-        ),
-      ),
-
-      // Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.lightGreen[200],
-        selectedItemColor: Colors.green[900],
-        unselectedItemColor: Colors.black54,
-        selectedFontSize: 14,
-        unselectedFontSize: 13,
-        items: [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Beranda",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.list),
-            label: "Jenis",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: "Deteksi",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.history),
-            label: "Riwayat",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
-        ],
-      ),
     );
   }
 }

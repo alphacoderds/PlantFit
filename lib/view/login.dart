@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; 
-import 'package:plantfit/view/scan.dart';
 import 'package:plantfit/view/register.dart';
+import 'package:plantfit/view/dashboard.dart';
+import 'package:plantfit/view/homepage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,6 +26,10 @@ class _LoginPageState extends State<LoginPage> {
           backgroundColor: Colors.green,
         ),
       );
+      Navigator.pushReplacement(
+        context, 
+        MaterialPageRoute(builder: (context) => Navbar()),
+      );
     }
   }
 
@@ -37,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width; // Lebar layar
+    double screenWidth = MediaQuery.of(context).size.width; 
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -81,7 +86,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Transform.translate(
-                offset: const Offset(0, -80), // Menggeser form ke atas
+                offset: const Offset(0, -80), 
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -179,7 +184,7 @@ class _LoginPageState extends State<LoginPage> {
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
-                        color: Color(0xFF4D6A3F)), // Border hijau tua
+                        color: Color(0xFF4D6A3F)), 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -189,7 +194,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF4D6A3F), // Warna teks hijau tua
+                      color: Color(0xFF4D6A3F), 
                     ),
                   ),
                 ),
