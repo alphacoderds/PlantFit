@@ -5,7 +5,7 @@ class AboutPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFD5E8B2), // Warna latar belakang hijau muda
+      backgroundColor: Color(0xFFD5E8B2), 
       appBar: AppBar(
         backgroundColor: Color(0xFFD5E8B2),
         elevation: 0,
@@ -24,7 +24,7 @@ class AboutPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Image.asset('assets/images/plantfit.png',
-                height: 120), // Logo di atas
+                height: 120),
             SizedBox(height: 20),
             Align(
               alignment: Alignment.centerLeft,

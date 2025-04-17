@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; 
 import 'package:plantfit/view/register.dart';
-import 'package:plantfit/view/dashboard.dart';
 import 'package:plantfit/view/homepage.dart';
 
 class LoginPage extends StatefulWidget {

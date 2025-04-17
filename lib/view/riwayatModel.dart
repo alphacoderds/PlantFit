@@ -8,6 +8,6 @@ class RiwayatStorage {
   }
 
   static List<RiwayatItem> getAllRiwayat() {
-    return riwayatList.reversed.toList(); // terbaru di atas
+    return riwayatList.reversed.toList(); 
   }
 }

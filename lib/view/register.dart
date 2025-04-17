@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart'; 
-import 'package:plantfit/view/login.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

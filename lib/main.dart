@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:plantfit/view/splashscreen.dart';
-
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized(); 
   runApp(const MyApp());

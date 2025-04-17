@@ -55,6 +55,7 @@ dev_dependencies:
   path_provider: ^2.0.15
   flutter_barcode_scanner: ^2.0.0
   tflite_v2: ^1.0.0
+  fl_chart: ^0.64.0
 
 flutter_launcher_icons: 
   android: true
