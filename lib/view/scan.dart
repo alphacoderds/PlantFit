@@ -8,6 +8,7 @@ import 'package:plantfit/view/dataTanah.dart';
 import 'package:plantfit/view/hasilDeteksi.dart';
 import 'package:plantfit/view/riwayat.dart';
 import 'package:plantfit/view/riwayatModel.dart';
+import 'package:image/image.dart' as img;
 
 class Result {
   final String label;
@@ -16,6 +17,8 @@ class Result {
   final String description;
   final String handling;
   final String imagePath;
+  final String kandungan;
+  final String rekomendasiTanaman;
 
   Result({
     required this.label,
@@ -24,6 +27,8 @@ class Result {
     required this.description,
     required this.handling,
     required this.imagePath,
+    required this.kandungan,
+    required this.rekomendasiTanaman,
   });
 }
 
@@ -35,11 +40,12 @@ class ScannerPage extends StatefulWidget {
 }
 
 class _ScannerPageState extends State<ScannerPage> {
-  int _selectedIndex = 2; // Index default untuk Deteksi
+  int _selectedIndex = 2;
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
   String? _lastImagePath;
   bool _isCameraInitialized = false;
+  bool _isProcessing = false;
 
   // Hasil prediksi
   String? _label;
@@ -53,36 +59,71 @@ class _ScannerPageState extends State<ScannerPage> {
   @override
   void initState() {
     super.initState();
-    _initializeCamera(); // Tambahkan ini
-    loadModel();
     _dataTanah = DataTanah();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeCamera();
+      loadModel();
+    });
   }
 
   Future<void> _initializeCamera() async {
-    _cameras = await availableCameras();
-    if (_cameras!.isNotEmpty) {
-      _cameraController = CameraController(
-        _cameras![0],
-        ResolutionPreset.medium,
-      );
-      await _cameraController!.initialize();
+    try {
+      _cameras = await availableCameras();
+      if (_cameras!.isNotEmpty) {
+        _cameraController = CameraController(
+          _cameras![0],
+          ResolutionPreset.medium,
+        );
+        await _cameraController!.initialize();
+        if (mounted) {
+          setState(() => _isCameraInitialized = true);
+        }
+      }
+    } catch (e) {
+      print("Error initializing camera: $e");
       if (mounted) {
-        setState(() {
-          _isCameraInitialized = true;
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text("Gagal menginisialisasi kamera: ${e.toString()}")),
+        );
       }
     }
   }
 
+  Future<String> _resizeImageTo150(String path) async {
+    final bytes = await File(path).readAsBytes();
+    img.Image? image = img.decodeImage(bytes);
+
+    if (image == null) throw Exception("Gagal decode image");
+
+    img.Image resized = img.copyResize(image, width: 150, height: 150);
+
+    final resizedPath = path.replaceFirst('.jpg', '_resized.jpg');
+    await File(resizedPath).writeAsBytes(img.encodeJpg(resized));
+
+    return resizedPath;
+  }
+
   Future<void> loadModel() async {
-    await Tflite.loadModel(
-      model: 'assets/model/model.tflite',
-      labels: 'assets/model/labels.txt',
-    );
+    try {
+      String? res = await Tflite.loadModel(
+        model: 'assets/model/my_model.tflite',
+        labels: 'assets/model/labels.txt',
+      );
+      print("Model loaded successfully: $res");
+    } catch (e) {
+      print("Failed to load model: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal memuat model")),
+        );
+      }
+    }
   }
 
   Future<Result?> predictUsingTFLite(String imagePath) async {
     try {
+      final resizedPath = await _resizeImageTo150(imagePath);
       final List<dynamic>? dynamicResults = await Tflite.runModelOnImage(
         path: imagePath,
         imageMean: 0.0,
@@ -92,115 +133,72 @@ class _ScannerPageState extends State<ScannerPage> {
         asynch: true,
       );
 
-      if (dynamicResults != null && dynamicResults.isNotEmpty) {
-        final int predictionIndex = dynamicResults[0]['index'] as int;
-        final String label = dynamicResults[0]['label'] as String;
-        final double confidence = dynamicResults[0]['confidence'] as double;
-
-        // Check if the predictionIndex is valid
-        if (predictionIndex < _dataTanah.treatment.length) {
-          final String latinName =
-              _dataTanah.treatment[predictionIndex]['latinName'] ?? '';
-          return Result(
-            label: label,
-            latinName: latinName,
-            confidence: confidence,
-            description:
-                _dataTanah.treatment[predictionIndex]['characteristics'] ?? '',
-            handling: _dataTanah.treatment[predictionIndex]['handling'] ?? '',
-            imagePath: imagePath,
-          );
-        } else {
-          return Result(
-            label: 'Tidak Diketahui',
-            latinName: 'Tidak Diketahui',
-            confidence: confidence,
-            description: '',
-            handling: '',
-            imagePath: imagePath,
-          );
-        }
+      if (dynamicResults == null || dynamicResults.isEmpty) {
+        print("No results from model");
+        return null;
       }
+
+      final int predictionIndex = dynamicResults[0]['index'] as int;
+      final String label = dynamicResults[0]['label']
+          .toString()
+          .replaceAll(RegExp(r'[0-9]'), '')
+          .trim();
+      final double confidence = dynamicResults[0]['confidence'] as double;
+
+      // Pastikan predictionIndex valid
+      if (predictionIndex < 0 ||
+          predictionIndex >= _dataTanah.treatment.length) {
+        print("Invalid prediction index: $predictionIndex");
+        return null;
+      }
+
+      final soilData = _dataTanah.treatment[predictionIndex];
+      return Result(
+        label: soilData['nama'] ?? label,
+        latinName: soilData['latinName'] ?? '',
+        confidence: confidence,
+        description: soilData['deskripsi'] ?? '',
+        handling: soilData['pengelolaan'] ?? '',
+        imagePath: imagePath,
+        kandungan: soilData['kandungan'] ?? '',
+        rekomendasiTanaman: soilData['rekomendasiTanaman'] ?? '',
+      );
     } catch (e) {
-      print("Error: $e");
+      print("Error during prediction: $e");
+      return null;
     }
-    return null;
   }
 
   Future<void> takePictureAndPredict() async {
-    if (_cameraController != null && _cameraController!.value.isInitialized) {
-      try {
-        print("Taking picture...");
-        final XFile image = await _cameraController!.takePicture();
-        print("Picture taken: ${image.path}");
-
-        setState(() {
-          _lastImagePath = image.path; // Update _lastImagePath
-        });
-
-        print("Predicting image...");
-        final result = await predictUsingTFLite(image.path);
-
-        if (result != null) {
-          setState(() {
-            _label = result.label;
-            _latinName = result.latinName;
-            _confidence = result.confidence;
-            _description = result.description;
-            _handling = result.handling;
-          });
-
-          RiwayatStorage.addRiwayat(RiwayatItem(
-            label: result.label,
-            latinName: result.latinName,
-            confidence: result.confidence,
-            description: result.description,
-            handling: result.handling,
-            imagePath: result.imagePath,
-            timestamp: DateTime.now(),
-          ));
-
-          print("Prediction successful: ${result.label}");
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => HasilDeteksiPage(
-                label: result.label,
-                latinName: result.latinName,
-                confidence: result.confidence,
-                description: result.description,
-                handling: result.handling,
-                imagePath: result.imagePath,
-              ),
-            ),
-          );
-        } else {
-          print("Prediction returned null");
-        }
-      } catch (e) {
-        print("Error taking picture: $e");
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text("Gagal mengambil gambar. Pastikan kamera aktif.")),
-        );
-      }
-    } else {
-      print("Camera not initialized");
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Kamera belum siap")),
+      );
+      return;
     }
-  }
 
-  Future<void> pickImageFromGallery() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      setState(() {
-        _lastImagePath = image.path; // <-- Tambahkan ini
-      });
+    if (_isProcessing) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final XFile image = await _cameraController!.takePicture();
+      setState(() => _lastImagePath = image.path);
 
       final result = await predictUsingTFLite(image.path);
 
       if (result != null) {
-        bool _isProcessing = false;
+        RiwayatStorage.addRiwayat(RiwayatItem(
+          label: result.label,
+          latinName: result.latinName,
+          confidence: result.confidence,
+          description: result.description,
+          handling: result.handling,
+          imagePath: result.imagePath,
+          kandungan: result.kandungan,
+          rekomendasiTanaman: result.rekomendasiTanaman,
+          timestamp: DateTime.now(),
+        ));
 
         Navigator.push(
           context,
@@ -212,19 +210,76 @@ class _ScannerPageState extends State<ScannerPage> {
               description: result.description,
               handling: result.handling,
               imagePath: result.imagePath,
+              kandungan: result.kandungan,
+              rekomendasiTanaman: result.rekomendasiTanaman,
             ),
           ),
         );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Gagal memproses gambar")),
+        );
       }
+    } catch (e) {
+      print("Error taking picture: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+    } finally {
+      setState(() => _isProcessing = false);
     }
   }
 
-  Future<void> testWithStaticImage() async {
-    final result = await predictUsingTFLite('assets/test_image.jpg');
-    if (result != null) {
-      print("Test prediction: ${result.label}");
-    } else {
-      print("Test prediction failed");
+  Future<void> pickImageFromGallery() async {
+    if (_isProcessing) return;
+
+    setState(() => _isProcessing = true);
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+      if (image != null) {
+        setState(() => _lastImagePath = image.path);
+        final result = await predictUsingTFLite(image.path);
+
+        if (result != null) {
+          RiwayatStorage.addRiwayat(RiwayatItem(
+            label: result.label,
+            latinName: result.latinName,
+            confidence: result.confidence,
+            description: result.description,
+            handling: result.handling,
+            imagePath: result.imagePath,
+            kandungan: result.kandungan,
+            rekomendasiTanaman: result.rekomendasiTanaman,
+            timestamp: DateTime.now(),
+          ));
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HasilDeteksiPage(
+                label: result.label,
+                latinName: result.latinName,
+                confidence: result.confidence,
+                description: result.description,
+                handling: result.handling,
+                imagePath: result.imagePath,
+                kandungan: result.kandungan,
+                rekomendasiTanaman: result.rekomendasiTanaman,
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      print("Error picking image: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: ${e.toString()}")),
+      );
+    } finally {
+      setState(() => _isProcessing = false);
     }
   }
 
@@ -273,9 +328,8 @@ class _ScannerPageState extends State<ScannerPage> {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.info_outline,
-                      color: Colors.orange, size: 25),
-                  const SizedBox(width: 10),
+                  Icon(Icons.info_outline, color: Colors.orange, size: 25),
+                  SizedBox(width: 10),
                   Expanded(
                     child: Text(
                       "Pastikan kondisi tanah normal dan gambar jelas dengan pencahayaan baik dan latar belakang sederhana. "
@@ -288,36 +342,39 @@ class _ScannerPageState extends State<ScannerPage> {
               ),
             ),
             SizedBox(height: 16),
-            Container(
-              height: 380,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: _isProcessing
+                    ? Center(child: CircularProgressIndicator())
+                    : _lastImagePath != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.file(File(_lastImagePath!),
+                                fit: BoxFit.cover),
+                          )
+                        : (_cameraController != null &&
+                                _cameraController!.value.isInitialized
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: AspectRatio(
+                                  aspectRatio:
+                                      _cameraController!.value.aspectRatio,
+                                  child: CameraPreview(_cameraController!),
+                                ),
+                              )
+                            : Center(child: CircularProgressIndicator())),
               ),
-              child: _lastImagePath != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(10),
-                      child:
-                          Image.file(File(_lastImagePath!), fit: BoxFit.cover),
-                    )
-                  : (_cameraController != null &&
-                          _cameraController!.value.isInitialized
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: AspectRatio(
-                            aspectRatio: _cameraController!.value.aspectRatio,
-                            child: CameraPreview(_cameraController!),
-                          ),
-                        )
-                      : Center(child: CircularProgressIndicator())),
             ),
             SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
-                  onPressed:
-                      pickImageFromGallery, // Fungsi untuk mengambil gambar dari galeri
+                  onPressed: _isProcessing ? null : pickImageFromGallery,
                   icon: Icon(Icons.image, color: Colors.black),
                   label: Text('Galeri'),
                   style: ElevatedButton.styleFrom(
@@ -326,8 +383,7 @@ class _ScannerPageState extends State<ScannerPage> {
                   ),
                 ),
                 ElevatedButton.icon(
-                  onPressed:
-                      takePictureAndPredict, // Fungsi untuk mengambil gambar dari kamera
+                  onPressed: _isProcessing ? null : takePictureAndPredict,
                   icon: Icon(Icons.camera_alt, color: Colors.black),
                   label: Text('Deteksi'),
                   style: ElevatedButton.styleFrom(

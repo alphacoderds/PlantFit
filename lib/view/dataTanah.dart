@@ -18,29 +18,15 @@ class DataTanah {
       'nama': 'Laterit',
       'latinName': 'Laterit',
       'deskripsi':
-          'Tanah Laterit merupakan tanah tua yang terbentuk di daerah beriklim panas dan lembap. Ciri khasnya adalah warna merah karena tinggi kandungan besi dan aluminium.',
+          'Tanah laterit adalah jenis tanah yang terbentuk di daerah tropis dan subtropis dengan curah hujan tinggi dan suhu yang hangat. Proses pembentukannya melibatkan pelapukan intensif batuan induk yang menghasilkan tanah kaya akan oksida besi dan aluminium, memberikan warna kemerahan atau kecokelatan khas pada tanah ini.',
       'kandungan':
-          'Kaya akan oksida besi dan aluminium, namun rendah kandungan hara esensial seperti nitrogen, fosfor, dan kalium.',
+          'Tanah laterit memiliki kandungan mineral seperti goethite, hematit, dan kaolinit, namun miskin akan unsur hara penting seperti nitrogen, fosfor, dan kalium, karena proses pelarutan dan pencucian sebagian besar mineral larut. Selain itu, tanah ini cenderung memiliki tekstur yang padat dan sulit ditembus air.',
       'pengelolaan':
-          'Memerlukan pemupukan intensif, penambahan kapur untuk menetralisir keasaman, serta pengelolaan air yang baik.',
+          'Perawatan tanah laterit memerlukan pendekatan khusus untuk meningkatkan kesuburan dan struktur tanah yang kurang optimal. Penambahan bahan organik seperti kompos, pupuk kandang, atau pupuk hijau sangat dianjurkan untuk meningkatkan kandungan humus dan kemampuan tanah dalam menyimpan air dan nutrisi. Penggunaan kapur (dolomit) juga dapat membantu menetralisir keasaman tanah.',
       'rekomendasiTanaman':
-          'Nanas, teh, karet, kelapa sawit, dan tanaman perkebunan lainnya.',
+          'Kelapa sawit, karet, kopi, kakao, singkong, dan tanaman legum seperti kacang-kacangan.',
       'characteristics': 'Tanah tua, warna merah, tinggi kandungan besi dan aluminium.',
-      'handling': 'Pemupukan intensif dan penambahan kapur.'
-    },
-    {
-      'nama': 'Latosol',
-      'latinName': 'Latosol',
-      'deskripsi':
-          'Tanah Latosol merupakan tanah yang terbentuk dari pelapukan batuan vulkanik dengan curah hujan tinggi dan suhu lembap.',
-      'kandungan':
-          'Mengandung lempung tinggi, cukup subur, kaya zat besi dan aluminium, namun mudah mengalami pencucian hara.',
-      'pengelolaan':
-          'Pemupukan berimbang secara rutin, penambahan bahan organik, dan rotasi tanaman untuk menjaga kesuburan.',
-      'rekomendasiTanaman':
-          'Padi, jagung, teh, kopi, cokelat, dan berbagai tanaman hortikultura.',
-      'characteristics': 'Berwarna merah kecoklatan, subur, mudah tercuci.',
-      'handling': 'Pemupukan berimbang dan penambahan bahan organik.'
+      'handling': 'Pemupukan intensif, penambahan kapur, dan pengelolaan air yang baik.'
     },
     {
       'nama': 'Alluvial',
@@ -57,18 +43,32 @@ class DataTanah {
       'handling': 'Pengolahan berkala dan pengendalian gulma.'
     },
     {
-      'nama': 'Andosol',
-      'latinName': 'Andosol',
+      'nama': 'Grumosol',
+      'latinName': 'Grumusol',
       'deskripsi':
-          'Tanah Andosol berasal dari material vulkanik muda dengan tingkat kesuburan tinggi dan daya serap air yang baik.',
+          'Tanah Grumosol terbentuk dari batuan kapur atau tufa vulkanik, bersifat liat, berat, dan memiliki tingkat retakan saat kering.',
       'kandungan':
-          'Kaya bahan organik, mineral vulkanik, dan unsur hara mikro. Cocok untuk tanaman hortikultura.',
+          'Kaya akan lempung dan kation tukar, namun drainase buruk dan cenderung basa.',
       'pengelolaan':
-          'Perlu pengelolaan kelembaban dan pemupukan berimbang untuk mempertahankan kesuburan.',
+          'Perlu pengolahan intensif, pengairan terkendali, serta pemupukan organik dan anorganik.',
       'rekomendasiTanaman':
-          'Kentang, wortel, kubis, kopi, teh, dan tanaman sayuran lainnya.',
-      'characteristics': 'Berwarna gelap, gembur, sangat subur.',
-      'handling': 'Pengelolaan kelembaban dan pemupukan berimbang.'
+          'Padi, tebu, kapas, dan jagung.',
+      'characteristics': 'Berwarna hitam hingga kelabu, retak saat kering.',
+      'handling': 'Pengolahan intensif dan pengairan terkendali.'
+    },
+    {
+      'nama': 'Vertisol',
+      'latinName': 'Vertisol',
+      'deskripsi':
+          'Tanah Vertisol adalah tanah liat berat yang sangat lengket saat basah dan retak besar saat kering.',
+      'kandungan':
+          'Tinggi kandungan lempung montmorillonit, kaya unsur hara namun sulit diolah.',
+      'pengelolaan':
+          'Perlu pengolahan saat kadar air optimum, penambahan bahan organik untuk memperbaiki struktur.',
+      'rekomendasiTanaman':
+          'Padi, kapas, sorgum, dan palawija.',
+      'characteristics': 'Liat berat, retak besar saat kering, lengket saat basah.',
+      'handling': 'Olah tanah saat kadar air optimal dan tambahkan bahan organik.'
     },
   ];
 }

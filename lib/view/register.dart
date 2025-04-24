@@ -195,9 +195,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 height: screenHeight * 0.06,
                 child: OutlinedButton(
-                  onPressed: () {
-                    // Tambahkan aksi sign-up di sini
-                  },
+                  onPressed: _login,
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(
                         color: Color(0xFF4D6A3F)), 

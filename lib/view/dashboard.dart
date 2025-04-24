@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:plantfit/view/riwayat.dart';
+import 'package:plantfit/view/riwayatModel.dart';
+import 'dart:io';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -10,6 +13,92 @@ class DashboardPage extends StatefulWidget {
 }
 
 class _DashboardPageState extends State<DashboardPage> {
+  List<RiwayatItem> latestRiwayat = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLatestRiwayat();
+  }
+
+  void _loadLatestRiwayat() async {
+    List<RiwayatItem> allRiwayat = await RiwayatStorage.getAllRiwayat();
+    allRiwayat.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    setState(() {
+      latestRiwayat = allRiwayat.take(10).toList();
+    });
+  }
+
+  bool _isLoaded = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isLoaded) {
+      _loadLatestRiwayat();
+      _isLoaded = true;
+    }
+  }
+
+  Map<String, int> _countSoilTypes(List<RiwayatItem> items) {
+    Map<String, int> counts = {};
+    for (var item in items) {
+      counts[item.label] = (counts[item.label] ?? 0) + 1;
+    }
+    return counts;
+  }
+
+  List<PieChartSectionData> _buildPieChartSections(
+      Map<String, int> soilCounts) {
+    final total = soilCounts.values.fold(0, (sum, val) => sum + val);
+    final colors = {
+      'Regosol': Color(0xFF4CAF50),
+      'Laterit': Color(0xFF8BC34A),
+      'Aluvial': Color(0xFFFFDF88),
+      'Grumosol': Color(0xFFFFA55D),
+      'Vertisol': Color(0xFFA76545),
+    };
+
+    return soilCounts.entries.map((entry) {
+      final percentage = (entry.value / total * 100).toStringAsFixed(0);
+      final color = colors[entry.key] ?? Colors.grey;
+
+      return PieChartSectionData(
+        value: entry.value.toDouble(),
+        title: '$percentage%',
+        color: color,
+        radius: 60,
+        titleStyle: GoogleFonts.lora(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+        ),
+        badgeWidget: _ChartBadge(entry.key, color),
+        badgePositionPercentageOffset: 1.2,
+      );
+    }).toList();
+  }
+
+  List<Widget> _buildLegendItems(Map<String, int> soilCounts) {
+    final colors = {
+      'Regosol': Color(0xFF4CAF50),
+      'Laterit': Color(0xFF8BC34A),
+      'Aluvial': Color(0xFFFFDF88),
+      'Grumosol': Color(0xFFFFA55D),
+      'Vertisol': Color(0xFFA76545),
+    };
+
+    return soilCounts.entries.map((entry) {
+      final color = colors[entry.key] ?? Colors.grey;
+      return _LegendItem(
+        color: color,
+        text:
+            '${entry.key} (${((entry.value / latestRiwayat.length) * 100).toStringAsFixed(0)}%)',
+        value: '${entry.value} deteksi',
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,58 +125,78 @@ class _DashboardPageState extends State<DashboardPage> {
         ),
       ),
       body: SingleChildScrollView(
-        // <-- Added SingleChildScrollView here
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Grid Kategori Tanah
             SizedBox(
               height: 140,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 5,
-                itemBuilder: (context, index) {
-                  List<String> titles = [
-                    'Regosol',
-                    'Laterit',
-                    'Aluvial',
-                    'Grumosol',
-                    'Vertisol'
-                  ];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Container(
-                      width: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 5,
-                            offset: Offset(2, 2),
-                          ),
-                        ],
+              child: latestRiwayat.isEmpty
+                  ? Center(
+                      child: Text(
+                        'Belum ada hasil deteksi.',
+                        style: GoogleFonts.lora(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.landscape, size: 50, color: Colors.green),
-                          SizedBox(height: 5),
-                          Text(
-                            titles[index],
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                    )
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: latestRiwayat.length,
+                      itemBuilder: (context, index) {
+                        final item = latestRiwayat[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: Container(
+                            width: 150,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 5,
+                                  offset: Offset(2, 2),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                (item.imagePath ?? '').isNotEmpty &&
+                                        File(item.imagePath).existsSync()
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: Image.file(
+                                          File(item.imagePath),
+                                          width: 120,
+                                          height: 100,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(Icons.broken_image,
+                                                      color: Colors.grey),
+                                        ),
+                                      )
+                                    : Icon(Icons.landscape,
+                                        size: 50, color: Colors.green),
+                                SizedBox(height: 5),
+                                Text(
+                                  item.label,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
             ),
             SizedBox(height: 20),
             Text(
@@ -95,7 +204,7 @@ class _DashboardPageState extends State<DashboardPage> {
               style: GoogleFonts.lora(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Colors.black,
+                color: Color(0xFF3E6606),
               ),
             ),
             SizedBox(height: 10),
@@ -132,7 +241,7 @@ class _DashboardPageState extends State<DashboardPage> {
                           ),
                         ),
                         Text(
-                          '200', // Total semua deteksi
+                          '${latestRiwayat.length}',
                           style: GoogleFonts.lora(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -156,78 +265,8 @@ class _DashboardPageState extends State<DashboardPage> {
                             sectionsSpace: 0,
                             centerSpaceRadius: 50,
                             startDegreeOffset: -90,
-                            sections: [
-                              PieChartSectionData(
-                                value: 40, // 20%
-                                title: '20%',
-                                color: Color(0xFF4CAF50), // Hijau tua
-                                radius: 60,
-                                titleStyle: GoogleFonts.lora(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                                badgeWidget:
-                                    _ChartBadge('Regosol', Color(0xFF4CAF50)),
-                                badgePositionPercentageOffset: 1.2,
-                              ),
-                              PieChartSectionData(
-                                value: 30, // 15%
-                                title: '15%',
-                                color: Color(0xFF8BC34A), // Hijau muda
-                                radius: 60,
-                                titleStyle: GoogleFonts.lora(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                                badgeWidget:
-                                    _ChartBadge('Laterit', Color(0xFF8BC34A)),
-                                badgePositionPercentageOffset: 1.3,
-                              ),
-                              PieChartSectionData(
-                                value: 50, // 25%
-                                title: '25%',
-                                color: Color(0xFFFFDF88), // Kuning hijau
-                                radius: 60,
-                                titleStyle: GoogleFonts.lora(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                                badgeWidget:
-                                    _ChartBadge('Aluvial', Color(0xFFFFDF88)),
-                                badgePositionPercentageOffset: 1.1,
-                              ),
-                              PieChartSectionData(
-                                value: 40, // 20%
-                                title: '20%',
-                                color: Color(0xFFFFA55D), // Coklat
-                                radius: 60,
-                                titleStyle: GoogleFonts.lora(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                                badgeWidget:
-                                    _ChartBadge('Grumosol', Color(0xFFFFA55D)),
-                                badgePositionPercentageOffset: 1.3,
-                              ),
-                              PieChartSectionData(
-                                value: 40, // 20%
-                                title: '20%',
-                                color: Color(0xFFA76545), // Biru abu-abu
-                                radius: 60,
-                                titleStyle: GoogleFonts.lora(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                                badgeWidget:
-                                    _ChartBadge('Vertisol', Color(0xFFA76545)),
-                                badgePositionPercentageOffset: 1.2,
-                              ),
-                            ],
+                            sections: _buildPieChartSections(
+                                _countSoilTypes(latestRiwayat)),
                           ),
                         ),
                       ),
@@ -240,34 +279,8 @@ class _DashboardPageState extends State<DashboardPage> {
                     alignment: WrapAlignment.center,
                     spacing: 20,
                     runSpacing: 10,
-                    children: [
-                      _LegendItem(
-                        color: Color(0xFF4CAF50),
-                        text: 'Regosol (20%)',
-                        value: '40 deteksi',
-                      ),
-                      _LegendItem(
-                        color: Color(0xFF8BC34A),
-                        text: 'Laterit (15%)',
-                        value: '30 deteksi',
-                      ),
-                      _LegendItem(
-                        color: Color(0xFFFFDF88),
-                        text: 'Aluvial (25%)',
-                        value: '50 deteksi',
-                      ),
-                      _LegendItem(
-                        color: Color(0xFFFFA55D),
-                        text: 'Grumosol (20%)',
-                        value: '40 deteksi',
-                      ),
-                      _LegendItem(
-                        color: Color(0xFFA76545),
-                        text: 'Vertisol (20%)',
-                        value: '40 deteksi',
-                      ),
-                    ],
-                  ),
+                    children: _buildLegendItems(_countSoilTypes(latestRiwayat)),
+                  )
                 ],
               ),
             ),

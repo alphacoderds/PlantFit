@@ -14,6 +14,8 @@ class RiwayatItem {
   final String description;
   final String handling;
   final String imagePath;
+  final String kandungan;              // Tambahkan
+  final String rekomendasiTanaman;     // Tambahkan
   final DateTime timestamp;
 
   RiwayatItem({
@@ -23,32 +25,21 @@ class RiwayatItem {
     required this.description,
     required this.handling,
     required this.imagePath,
+    required this.kandungan,           // ✅
+    required this.rekomendasiTanaman,  // ✅
     required this.timestamp,
   });
 }
 
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
+  
+  @override
   _RiwayatPageState createState() => _RiwayatPageState();
 }
 
 class _RiwayatPageState extends State<RiwayatPage> {
-  int _selectedIndex = 0;
-
-  final List<Widget> _pages = [
-    DaftarJenisPage(),
-    ScannerPage(),
-    RegisterPage(),
-    LoginPage(),
-    RiwayatPage(),
-  ];
-
-  void _onItemTapped(int index) {
-    if (index == _selectedIndex) return;
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  int _selectedIndex = 3; // Sesuaikan dengan index riwayat
 
   @override
   Widget build(BuildContext context) {
@@ -92,31 +83,31 @@ class _RiwayatPageState extends State<RiwayatPage> {
               itemBuilder: (context, index) {
                 final item = riwayatList[index];
                 return Card(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  elevation: 3,
+                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
-                    leading: Image.file(
-                      File(item.imagePath),
-                      width: 60,
-                      height: 60,
-                      fit: BoxFit.cover,
-                    ),
+                    leading: item.imagePath.isNotEmpty
+                        ? Image.file(
+                            File(item.imagePath),
+                            width: 60,
+                            height: 60,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Icon(Icons.error),
+                          )
+                        : const Icon(Icons.image),
                     title: Text(
                       item.label,
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Color(0xFF3E6606),
                       ),
                     ),
                     subtitle: Text(
                       "Akurasi: ${(item.confidence * 100).toStringAsFixed(2)}%\n"
-                      "Waktu: ${item.timestamp.toLocal()}",
-                      style: const TextStyle(
-                        fontSize: 14,
-                      ),
+                      "Waktu: ${item.timestamp.toLocal().toString().substring(0, 16)}",
                     ),
+                    onTap: () {
+                      // Navigasi ke detail riwayat jika diperlukan
+                    },
                   ),
                 );
               },
