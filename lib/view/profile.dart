@@ -4,45 +4,56 @@ import 'package:plantfit/view/editprofile.dart';
 import 'package:plantfit/view/login.dart';
 import 'package:plantfit/view/tentangKami.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
+  @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  // Ini data user
+  String nama = "Putri";
+  String phoneNumber = "+62 812-xxxx-xxx";
+  String gender = "Women";
+  String location = "Madiun";
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFEFF5E3),
+      backgroundColor: const Color(0xFFEFF5E3),
       appBar: AppBar(
-        backgroundColor: Color(0xFFEFF5E3),
+        backgroundColor: const Color(0xFFEFF5E3),
         elevation: 0,
         title: Row(
           children: [
             Image.asset('assets/images/plantfit.png', height: 50),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             Text(
               'Profile',
               style: GoogleFonts.lora(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Color(0xFF3E6606),
+                color: const Color(0xFF3E6606),
               ),
             ),
           ],
         ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
+            const CircleAvatar(
               radius: 50,
               backgroundColor: Color(0xFF3E6606),
               child: Icon(Icons.person, size: 50, color: Colors.white),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Color(0xFF3E6606),
+                color: const Color(0xFF3E6606),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -56,16 +67,15 @@ class ProfilePage extends StatelessWidget {
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 10),
-                  ProfileDetail(title: 'Nama', value: 'Putri'),
-                  ProfileDetail(
-                      title: 'Phone Number', value: '+62 812-xxxx-xxx'),
-                  ProfileDetail(title: 'Gender', value: 'Women'),
-                  ProfileDetail(title: 'Location', value: 'Madiun'),
+                  const SizedBox(height: 10),
+                  ProfileDetail(title: 'Nama', value: nama),
+                  ProfileDetail(title: 'Phone Number', value: phoneNumber),
+                  ProfileDetail(title: 'Gender', value: gender),
+                  ProfileDetail(title: 'Location', value: location),
                 ],
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -75,16 +85,16 @@ class ProfilePage extends StatelessWidget {
               },
               child: Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 12),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 decoration: BoxDecoration(
-                  color: Color(0xFF3E6606),
+                  color: const Color(0xFF3E6606),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.info_outline, color: Colors.white),
-                    SizedBox(width: 8),
+                    const Icon(Icons.info_outline, color: Colors.white),
+                    const SizedBox(width: 8),
                     Text(
                       'Tentang kami',
                       style: GoogleFonts.lora(
@@ -97,17 +107,41 @@ class ProfilePage extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ProfileButton(
               text: 'Edit Profile',
-              onPressed: () {
-                Navigator.push(
+              onPressed: () async {
+                // Pergi ke EditProfilePage dan tunggu hasilnya
+                final result = await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => EditProfilePage()),
+                  MaterialPageRoute(
+                    builder: (context) => EditProfilePage(
+                      firstNameController: TextEditingController(text: nama),
+                      lastNameController: TextEditingController(),
+                      phoneNumberController: TextEditingController(text: phoneNumber),
+                      genderController: TextEditingController(text: gender),
+                      locationController: TextEditingController(text: location),
+                    ),
+                  ),
                 );
+
+                // Kalau ada data dikembalikan
+                if (result != null) {
+                  setState(() {
+                    nama = result['firstName']; // Sesuaikan key dari EditProfilePage
+                    phoneNumber = result['phone'];
+                    gender = result['gender'];
+                    location = result['location'];
+                  });
+
+                  // Option: munculkan SnackBar
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Profile berhasil diperbarui!')),
+                  );
+                }
               },
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             ProfileButton(
               text: 'Logout',
               onPressed: () {
@@ -134,7 +168,7 @@ class ProfileDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -153,7 +187,7 @@ class ProfileDetail extends StatelessWidget {
               color: Colors.white,
             ),
           ),
-          SizedBox(height: 5),
+          const SizedBox(height: 5),
         ],
       ),
     );
@@ -172,7 +206,7 @@ class ProfileButton extends StatelessWidget {
       onTap: onPressed,
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.black54),
           borderRadius: BorderRadius.circular(8),

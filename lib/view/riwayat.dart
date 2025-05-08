@@ -6,6 +6,7 @@ import 'package:plantfit/view/login.dart';
 import 'package:plantfit/view/daftarjenis.dart';
 import 'package:plantfit/view/scan.dart';
 import 'package:plantfit/view/riwayatModel.dart';
+import 'package:plantfit/view/hasilDeteksi.dart';
 
 class RiwayatItem {
   final String label;
@@ -14,8 +15,8 @@ class RiwayatItem {
   final String description;
   final String handling;
   final String imagePath;
-  final String kandungan;              // Tambahkan
-  final String rekomendasiTanaman;     // Tambahkan
+  final String kandungan; // Tambahkan
+  final String rekomendasiTanaman; // Tambahkan
   final DateTime timestamp;
 
   RiwayatItem({
@@ -25,15 +26,15 @@ class RiwayatItem {
     required this.description,
     required this.handling,
     required this.imagePath,
-    required this.kandungan,           // ✅
-    required this.rekomendasiTanaman,  // ✅
+    required this.kandungan, 
+    required this.rekomendasiTanaman, 
     required this.timestamp,
   });
 }
 
 class RiwayatPage extends StatefulWidget {
   const RiwayatPage({super.key});
-  
+
   @override
   _RiwayatPageState createState() => _RiwayatPageState();
 }
@@ -53,7 +54,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
         title: Row(
           children: [
             Image.asset(
-              'assets/images/plantfit.png', 
+              'assets/images/plantfit.png',
               width: 50,
               height: 50,
             ),
@@ -83,7 +84,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
               itemBuilder: (context, index) {
                 final item = riwayatList[index];
                 return Card(
-                  margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   child: ListTile(
                     leading: item.imagePath.isNotEmpty
                         ? Image.file(
@@ -106,7 +108,21 @@ class _RiwayatPageState extends State<RiwayatPage> {
                       "Waktu: ${item.timestamp.toLocal().toString().substring(0, 16)}",
                     ),
                     onTap: () {
-                      // Navigasi ke detail riwayat jika diperlukan
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HasilDeteksiPage(
+                            label: item.label,
+                            latinName: item.latinName,
+                            confidence: item.confidence,
+                            description: item.description,
+                            handling: item.handling,
+                            imagePath: item.imagePath,
+                            kandungan: item.kandungan,
+                            rekomendasiTanaman: item.rekomendasiTanaman,
+                          ),
+                        ),
+                      );
                     },
                   ),
                 );

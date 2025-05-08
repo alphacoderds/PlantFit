@@ -107,7 +107,7 @@ class _ScannerPageState extends State<ScannerPage> {
   Future<void> loadModel() async {
     try {
       String? res = await Tflite.loadModel(
-        model: 'assets/model/my_model.tflite',
+        model: 'assets/model/model_b.tflite',
         labels: 'assets/model/labels.txt',
       );
       print("Model loaded successfully: $res");

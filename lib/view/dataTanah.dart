@@ -10,7 +10,7 @@ class DataTanah {
       'pengelolaan':
           'Perlu penambahan bahan organik seperti pupuk kompos atau pupuk kandang secara rutin. Perlu juga pengairan yang teratur karena tanah mudah kering.',
       'rekomendasiTanaman':
-          'Jagung, kedelai, kacang tanah, singkong, dan tanaman hortikultura seperti cabai dan tomat.',
+          'Jagung, kedelai, kacang tanah, singkong, cabai, tomat, semangka, melon, labu.',
       'characteristics': 'Tanah muda, bertekstur kasar, kandungan organik rendah.',
       'handling': 'Perlu penambahan bahan organik dan pengairan teratur.'
     },
@@ -24,7 +24,7 @@ class DataTanah {
       'pengelolaan':
           'Perawatan tanah laterit memerlukan pendekatan khusus untuk meningkatkan kesuburan dan struktur tanah yang kurang optimal. Penambahan bahan organik seperti kompos, pupuk kandang, atau pupuk hijau sangat dianjurkan untuk meningkatkan kandungan humus dan kemampuan tanah dalam menyimpan air dan nutrisi. Penggunaan kapur (dolomit) juga dapat membantu menetralisir keasaman tanah.',
       'rekomendasiTanaman':
-          'Kelapa sawit, karet, kopi, kakao, singkong, dan tanaman legum seperti kacang-kacangan.',
+          'Kelapa sawit, karet, kopi, kakao, singkong, kacang tanah, pisang, nanas.',
       'characteristics': 'Tanah tua, warna merah, tinggi kandungan besi dan aluminium.',
       'handling': 'Pemupukan intensif, penambahan kapur, dan pengelolaan air yang baik.'
     },
@@ -38,7 +38,7 @@ class DataTanah {
       'pengelolaan':
           'Pengolahan tanah secara berkala untuk mencegah pemadatan dan pengendalian gulma serta hama.',
       'rekomendasiTanaman':
-          'Padi, jagung, sayuran, buah-buahan, dan palawija.',
+          'Padi, jagung, sayuran (bayam, kangkung), buah-buahan (semangka, melon), tebu, bawang merah, cabai.',
       'characteristics': 'Tanah endapan, subur, tekstur halus.',
       'handling': 'Pengolahan berkala dan pengendalian gulma.'
     },
@@ -52,7 +52,7 @@ class DataTanah {
       'pengelolaan':
           'Perlu pengolahan intensif, pengairan terkendali, serta pemupukan organik dan anorganik.',
       'rekomendasiTanaman':
-          'Padi, tebu, kapas, dan jagung.',
+          'Padi, tebu, kapas, jagung, kedelai, ubi jalar, kacang hijau.',
       'characteristics': 'Berwarna hitam hingga kelabu, retak saat kering.',
       'handling': 'Pengolahan intensif dan pengairan terkendali.'
     },
@@ -66,7 +66,7 @@ class DataTanah {
       'pengelolaan':
           'Perlu pengolahan saat kadar air optimum, penambahan bahan organik untuk memperbaiki struktur.',
       'rekomendasiTanaman':
-          'Padi, kapas, sorgum, dan palawija.',
+          'Padi, kapas, sorgum, jagung, kedelai, tomat, bawang merah.',
       'characteristics': 'Liat berat, retak besar saat kering, lengket saat basah.',
       'handling': 'Olah tanah saat kadar air optimal dan tambahkan bahan organik.'
     },

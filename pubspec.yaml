@@ -91,7 +91,7 @@ flutter:
     - assets/images/vertisol.png
     - assets/model/labels.txt
     - assets/model/my_model.tflite
-
+    - assets/model/model_b.tflite
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

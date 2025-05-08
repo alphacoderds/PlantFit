@@ -2,60 +2,73 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class EditProfilePage extends StatelessWidget {
-  final TextEditingController firstNameController =
-      TextEditingController(text: "Putri");
-  final TextEditingController lastNameController =
-      TextEditingController(text: "Radisa");
-  final TextEditingController phoneNumberController =
-      TextEditingController(text: "xxxx");
-  final TextEditingController genderController =
-      TextEditingController(text: "Woman");
-  final TextEditingController locationController =
-      TextEditingController(text: "Madiun");
+  final TextEditingController firstNameController;
+  final TextEditingController lastNameController;
+  final TextEditingController phoneNumberController;
+  final TextEditingController genderController;
+  final TextEditingController locationController;
+
+  EditProfilePage({
+    Key? key,
+    required this.firstNameController,
+    required this.lastNameController,
+    required this.phoneNumberController,
+    required this.genderController,
+    required this.locationController,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFE6F4E6),
+      backgroundColor: const Color(0xFFE6F4E6),
       appBar: AppBar(
         title: Text(
           "Edit Profile",
           style: GoogleFonts.lora(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            color: Color(0xFF3E6606),
+            color: const Color(0xFF3E6606),
           ),
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Color(0xFF3E6606)),
+          icon: const Icon(Icons.arrow_back, color: Color(0xFF3E6606)),
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             CircleAvatar(
               radius: 50,
-              backgroundColor: Color(0xFF3E6606),
-              child: Icon(Icons.person, size: 50, color: Colors.white),
+              backgroundColor: const Color(0xFF3E6606),
+              child: const Icon(Icons.person, size: 50, color: Colors.white),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             buildTextField("First Name", firstNameController),
             buildTextField("Last Name", lastNameController),
             buildTextField("Phone Number", phoneNumberController),
             buildTextField("Gender", genderController),
             buildTextField("Location", locationController),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Map<String, String> updatedProfile = {
+                  'firstName': firstNameController.text,
+                  'lastName': lastNameController.text,
+                  'phone': phoneNumberController.text,
+                  'gender': genderController.text,
+                  'location': locationController.text,
+                };
+                Navigator.pop(context, updatedProfile);
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[900],
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
-              child: Text("Save", style: TextStyle(color: Colors.white)),
+              child: const Text("Save", style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
