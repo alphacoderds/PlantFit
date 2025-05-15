@@ -32,7 +32,7 @@ class HasilDeteksiPage extends StatelessWidget {
         backgroundColor: Color(0xFF3E6606),
         elevation: 0,
         title: Text(
-          'Detail Jenis Tanah',
+          'Hasil Deteksi',
           style: GoogleFonts.lora(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -74,10 +74,10 @@ class HasilDeteksiPage extends StatelessWidget {
                   Text(
                     latinName,
                     style: TextStyle(
-                      fontSize: 16,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.grey[600]),
-                    ),
+                        fontSize: 16,
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey[600]),
+                  ),
                   SizedBox(height: 8),
                   Row(
                     children: [
@@ -86,9 +86,9 @@ class HasilDeteksiPage extends StatelessWidget {
                       Text(
                         'Akurasi: ${confidence.toStringAsFixed(2)}%',
                         style: TextStyle(
-                          color: Colors.grey[700],
-                          fontWeight: FontWeight.w500),
-                        ),
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.w500),
+                      ),
                     ],
                   ),
                 ],
@@ -153,8 +153,7 @@ class HasilDeteksiPage extends StatelessWidget {
             SizedBox(height: 20),
 
             // Rekomendasi Tanaman
-            if (rekomendasiTanaman.isNotEmpty)
-              _buildPlantSection(),
+            if (rekomendasiTanaman.isNotEmpty) _buildPlantSection(),
           ],
         ),
       ),
@@ -207,10 +206,8 @@ class HasilDeteksiPage extends StatelessWidget {
           ),
           child: Text(
             content,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.6,
-              color: Colors.grey[800]),
+            style:
+                TextStyle(fontSize: 14, height: 1.6, color: Colors.grey[800]),
           ),
         ),
       ],
@@ -219,6 +216,43 @@ class HasilDeteksiPage extends StatelessWidget {
 
   Widget _buildPlantSection() {
     final plants = rekomendasiTanaman.split(', ');
+
+    // Contoh dummy image map (bisa kamu ganti dengan asset atau network)
+    final plantImages = {
+      'Bawang Merah': 'assets/images/rekomendasi/bawangmerah.png',
+      'Bayam': 'assets/images/rekomendasi/bayam.png',
+      'Cabai': 'assets/images/rekomendasi/cabai.png',
+      'Cengkeh': 'assets/images/rekomendasi/cengkeh.png',
+      'Gandum': 'assets/images/rekomendasi/gandum.png',
+      'Jagung': 'assets/images/rekomendasi/jagung.png',
+      'Jagung Pulut': 'assets/images/rekomendasi/jagungpalut.png',
+      'Jambu Mete': 'assets/images/rekomendasi/jambumete.png',
+      'Kacang Hijau': 'assets/images/rekomendasi/kacanghijau.png',
+      'Kacang Tanah': 'assets/images/rekomendasi/kacangtanah.png',
+      'Kakao': 'assets/images/rekomendasi/kakao.png',
+      'Kangkung': 'assets/images/rekomendasi/kangkung.png',
+      'Kapas': 'assets/images/rekomendasi/kapas.png',
+      'Karet': 'assets/images/rekomendasi/karet.png',
+      'Kedelai': 'assets/images/rekomendasi/kedelai.png',
+      'Kelapa Sawit': 'assets/images/rekomendasi/kelapasawit.png',
+      'Kopi': 'assets/images/rekomendasi/kopi.png',
+      'Labu': 'assets/images/rekomendasi/labu.png',
+      'Melon': 'assets/images/rekomendasi/melon.png',
+      'Nanas': 'assets/images/rekomendasi/nanas.png',
+      'Padi': 'assets/images/rekomendasi/padi.png',
+      'Pisang': 'assets/images/rekomendasi/pisang.png',
+      'Sawit': 'assets/images/rekomendasi/sawit.png',
+      'Semangka': 'assets/images/rekomendasi/semangka.png',
+      'Singkong': 'assets/images/rekomendasi/singkong.png',
+      'Sorgum': 'assets/images/rekomendasi/sorgum.png',
+      'Tebu': 'assets/images/rekomendasi/tebu.png',
+      'Teh': 'assets/images/rekomendasi/teh.png',
+      'Tembakau': 'assets/images/rekomendasi/tembakau.png',
+      'Tomat': 'assets/images/rekomendasi/tomat.png',
+      'Ubi Jalar': 'assets/images/rekomendasi/ubijalar.png',
+      // Tambahkan sesuai kebutuhan
+    };
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -230,8 +264,8 @@ class HasilDeteksiPage extends StatelessWidget {
                 color: Color(0xFFFBBC05).withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child: Icon(Icons.agriculture, 
-                color: Color(0xFFFBBC05), size: 20),
+              child:
+                  Icon(Icons.agriculture, color: Color(0xFFFBBC05), size: 20),
             ),
             SizedBox(width: 8),
             Text(
@@ -245,29 +279,56 @@ class HasilDeteksiPage extends StatelessWidget {
           ],
         ),
         SizedBox(height: 12),
-        Container(
-          padding: EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black12,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: plants.map((plant) => Chip(
-              label: Text(plant.trim()),
-              backgroundColor: Color(0xFFFBBC05).withOpacity(0.1),
-              shape: StadiumBorder(
-                side: BorderSide(color: Color(0xFFFBBC05).withOpacity(0.3)),
-              ),
-            )).toList(),
+        SizedBox(
+          height: 140,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: plants.map((plant) {
+                final image = plantImages[plant] ??
+                    'assets/images/default.jpg'; // default fallback
+                return Container(
+                  width: 120,
+                  margin: EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      ClipRRect(
+                        borderRadius:
+                            BorderRadius.vertical(top: Radius.circular(12)),
+                        child: Image.asset(
+                          image,
+                          height: 80,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          plant.trim(),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ],

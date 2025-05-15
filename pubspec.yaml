@@ -89,9 +89,41 @@ flutter:
     - assets/images/aluvial.png
     - assets/images/grumosol.png
     - assets/images/vertisol.png
+    - assets/images/rekomendasi/bawangmerah.png
+    - assets/images/rekomendasi/bayam.png
+    - assets/images/rekomendasi/cabai.png
+    - assets/images/rekomendasi/cengkeh.png
+    - assets/images/rekomendasi/gandum.png
+    - assets/images/rekomendasi/jagung.png
+    - assets/images/rekomendasi/jagungpalut.png
+    - assets/images/rekomendasi/jambumete.png
+    - assets/images/rekomendasi/kacanghijau.png
+    - assets/images/rekomendasi/kacangtanah.png
+    - assets/images/rekomendasi/kakao.png
+    - assets/images/rekomendasi/kangkung.png
+    - assets/images/rekomendasi/kapas.png
+    - assets/images/rekomendasi/karet.png
+    - assets/images/rekomendasi/kedelai.png
+    - assets/images/rekomendasi/kelapasawit.png
+    - assets/images/rekomendasi/kopi.png
+    - assets/images/rekomendasi/labu.png
+    - assets/images/rekomendasi/melon.png
+    - assets/images/rekomendasi/nanas.png
+    - assets/images/rekomendasi/padi.png
+    - assets/images/rekomendasi/pisang.png
+    - assets/images/rekomendasi/sawit.png
+    - assets/images/rekomendasi/semangka.png
+    - assets/images/rekomendasi/singkong.png
+    - assets/images/rekomendasi/sorgum.png
+    - assets/images/rekomendasi/tebu.png
+    - assets/images/rekomendasi/teh.png
+    - assets/images/rekomendasi/tembakau.png
+    - assets/images/rekomendasi/tomat.png
+    - assets/images/rekomendasi/ubijalar.png
     - assets/model/labels.txt
     - assets/model/my_model.tflite
     - assets/model/model_b.tflite
+    - assets/model/model_bkedua.tflite
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

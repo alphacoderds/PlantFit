@@ -66,6 +66,47 @@ class _ScannerPageState extends State<ScannerPage> {
     });
   }
 
+  void _showUnrecognizedDialog() {
+  showDialog(
+    context: context,
+    barrierDismissible: false, // Mencegah pengguna menutup dialog dengan mengetuk luar dialog
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white, // Menambahkan warna latar belakang
+        title: Text(
+          "Gambar Tidak Dikenali",
+          textAlign: TextAlign.center, 
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF3E6606), // Menambahkan warna hijau untuk judul
+          ),
+        ),
+        content: Text(
+          "Gambar tidak dikenali sebagai jenis tanah. Harap gunakan gambar tanah yang jelas dan dengan pencahayaan yang baik.",
+          style: TextStyle(color: Colors.black87), 
+          textAlign: TextAlign.center, 
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text(
+              "Coba Lagi",
+              style: TextStyle(color: Colors.green), 
+            ),
+            onPressed: () {
+              Navigator.of(context).pop(); // Menutup dialog
+              setState(() {
+                _lastImagePath = null; // Mengatur ulang gambar terakhir
+              });
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
   Future<void> _initializeCamera() async {
     try {
       _cameras = await availableCameras();
@@ -82,10 +123,7 @@ class _ScannerPageState extends State<ScannerPage> {
     } catch (e) {
       print("Error initializing camera: $e");
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text("Gagal menginisialisasi kamera: ${e.toString()}")),
-        );
+        _showUnrecognizedDialog();
       }
     }
   }
@@ -93,14 +131,11 @@ class _ScannerPageState extends State<ScannerPage> {
   Future<String> _resizeImageTo150(String path) async {
     final bytes = await File(path).readAsBytes();
     img.Image? image = img.decodeImage(bytes);
-
     if (image == null) throw Exception("Gagal decode image");
-
     img.Image resized = img.copyResize(image, width: 150, height: 150);
 
     final resizedPath = path.replaceFirst('.jpg', '_resized.jpg');
     await File(resizedPath).writeAsBytes(img.encodeJpg(resized));
-
     return resizedPath;
   }
 
@@ -178,7 +213,6 @@ class _ScannerPageState extends State<ScannerPage> {
     }
 
     if (_isProcessing) return;
-
     setState(() => _isProcessing = true);
 
     try {
@@ -187,7 +221,8 @@ class _ScannerPageState extends State<ScannerPage> {
 
       final result = await predictUsingTFLite(image.path);
 
-      if (result != null) {
+//Confidence Threshold = 0.4
+      if (result != null && result.confidence >= 0.4) {
         RiwayatStorage.addRiwayat(RiwayatItem(
           label: result.label,
           latinName: result.latinName,
@@ -215,10 +250,12 @@ class _ScannerPageState extends State<ScannerPage> {
             ),
           ),
         );
+
+        setState(() {
+          _lastImagePath = null;
+        });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Gagal memproses gambar")),
-        );
+        _showUnrecognizedDialog();
       }
     } catch (e) {
       print("Error taking picture: $e");
@@ -232,7 +269,6 @@ class _ScannerPageState extends State<ScannerPage> {
 
   Future<void> pickImageFromGallery() async {
     if (_isProcessing) return;
-
     setState(() => _isProcessing = true);
 
     try {
@@ -243,7 +279,7 @@ class _ScannerPageState extends State<ScannerPage> {
         setState(() => _lastImagePath = image.path);
         final result = await predictUsingTFLite(image.path);
 
-        if (result != null) {
+        if (result != null && result.confidence >= 0.4) {
           RiwayatStorage.addRiwayat(RiwayatItem(
             label: result.label,
             latinName: result.latinName,
@@ -272,6 +308,12 @@ class _ScannerPageState extends State<ScannerPage> {
             ),
           );
         }
+
+        setState(() {
+          _lastImagePath = null;
+        });
+      } else {
+        _showUnrecognizedDialog();
       }
     } catch (e) {
       print("Error picking image: $e");

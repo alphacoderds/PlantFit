@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -12,6 +12,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   void _login() {
     if (_formKey.currentState!.validate()) {
@@ -30,6 +32,7 @@ class _RegisterPageState extends State<RegisterPage> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -79,7 +82,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 ),
               ),
               Transform.translate(
-                offset: const Offset(0, -80), 
+                offset: const Offset(0, -80),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -111,9 +114,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         return null;
                       },
                     ),
-                    SizedBox(
-                        height: screenHeight *
-                            0.02),
+                    SizedBox(height: screenHeight * 0.02),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
@@ -137,11 +138,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         return null;
                       },
                     ),
-                    SizedBox(
-                        height: screenHeight *
-                            0.02), 
+                    SizedBox(height: screenHeight * 0.02),
                     TextFormField(
-                      controller: _passwordController,
+                      controller: _confirmPasswordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
@@ -195,10 +194,12 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 height: screenHeight * 0.06,
                 child: OutlinedButton(
-                  onPressed: _login,
+                  onPressed: () {
+                    Navigator.pop(
+                        context); // Jika ingin kembali ke halaman sebelumnya
+                  },
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                        color: Color(0xFF4D6A3F)), 
+                    side: const BorderSide(color: Color(0xFF4D6A3F)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -208,7 +209,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF4D6A3F), 
+                      color: Color(0xFF4D6A3F),
                     ),
                   ),
                 ),

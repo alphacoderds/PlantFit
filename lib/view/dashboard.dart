@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:plantfit/view/riwayat.dart';
 import 'package:plantfit/view/riwayatModel.dart';
+import 'package:plantfit/view/hasilDeteksi.dart';
 import 'dart:io';
 
 class DashboardPage extends StatefulWidget {
@@ -129,6 +130,15 @@ class _DashboardPageState extends State<DashboardPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Deteksi Terbaru',
+              style: GoogleFonts.lora(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF3E6606),
+              ),
+            ),
+            SizedBox(height: 10),
             SizedBox(
               height: 140,
               child: latestRiwayat.isEmpty
@@ -149,49 +159,69 @@ class _DashboardPageState extends State<DashboardPage> {
                         final item = latestRiwayat[index];
                         return Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: Container(
-                            width: 150,
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black12,
-                                  blurRadius: 5,
-                                  offset: Offset(2, 2),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                (item.imagePath ?? '').isNotEmpty &&
-                                        File(item.imagePath).existsSync()
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Image.file(
-                                          File(item.imagePath),
-                                          width: 120,
-                                          height: 100,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  Icon(Icons.broken_image,
-                                                      color: Colors.grey),
-                                        ),
-                                      )
-                                    : Icon(Icons.landscape,
-                                        size: 50, color: Colors.green),
-                                SizedBox(height: 5),
-                                Text(
-                                  item.label,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => HasilDeteksiPage(
+                                    label: item.label,
+                                    latinName: item.latinName,
+                                    confidence: item.confidence,
+                                    description: item.description,
+                                    handling: item.handling,
+                                    imagePath: item.imagePath,
+                                    kandungan: item.kandungan,
+                                    rekomendasiTanaman: item.rekomendasiTanaman,
                                   ),
-                                  textAlign: TextAlign.center,
                                 ),
-                              ],
+                              );
+                            },
+                            child: Container(
+                              width: 150,
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 5,
+                                    offset: Offset(2, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  (item.imagePath ?? '').isNotEmpty &&
+                                          File(item.imagePath).existsSync()
+                                      ? ClipRRect(
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                          child: Image.file(
+                                            File(item.imagePath),
+                                            width: 120,
+                                            height: 100,
+                                            fit: BoxFit.cover,
+                                            errorBuilder:
+                                                (context, error, stackTrace) =>
+                                                    Icon(Icons.broken_image,
+                                                        color: Colors.grey),
+                                          ),
+                                        )
+                                      : Icon(Icons.landscape,
+                                          size: 50, color: Colors.green),
+                                  SizedBox(height: 5),
+                                  Text(
+                                    item.label,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );
