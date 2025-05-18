@@ -1,10 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:plantfit/view/daftarjenis.dart';
-import 'package:plantfit/view/dashboard.dart';
-import 'package:plantfit/view/profile.dart';
-import 'package:plantfit/view/riwayat.dart';
-import 'package:plantfit/view/scan.dart';
+import 'package:plantfit/view/daftarJenis/daftarjenis.dart';
+import 'package:plantfit/view/dashboard/dashboard.dart';
+import 'package:plantfit/view/profile/profile.dart';
+import 'package:plantfit/view/riwayat/riwayat.dart';
+import 'package:plantfit/view/scan/scan.dart';
 
 class Navbar extends StatefulWidget {
   const Navbar({super.key});

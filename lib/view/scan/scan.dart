@@ -4,10 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:camera/camera.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tflite_v2/tflite_v2.dart';
-import 'package:plantfit/view/dataTanah.dart';
-import 'package:plantfit/view/hasilDeteksi.dart';
-import 'package:plantfit/view/riwayat.dart';
-import 'package:plantfit/view/riwayatModel.dart';
+import 'package:plantfit/view/scan/dataTanah.dart';
+import 'package:plantfit/view/scan/hasilDeteksi.dart';
+import 'package:plantfit/view/riwayat/riwayat.dart';
+import 'package:plantfit/view/riwayat/riwayatModel.dart';
 import 'package:image/image.dart' as img;
 
 class Result {

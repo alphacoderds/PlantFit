@@ -1,4 +1,4 @@
-import 'package:plantfit/view/riwayat.dart';
+import 'package:plantfit/view/riwayat/riwayat.dart';
 
 /// Class untuk menyimpan riwayat deteksi
 class RiwayatStorage {

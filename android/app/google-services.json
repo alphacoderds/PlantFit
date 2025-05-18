@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "364500172149",
+    "project_id": "plantfit-3f2ee",
+    "storage_bucket": "plantfit-3f2ee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364500172149:android:d9d7453d98ee6d61aa273c",
+        "android_client_info": {
+          "package_name": "com.example.plantfit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBE-cAaMYeGmbu8IELlqRgcDUvBzPDLDZo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

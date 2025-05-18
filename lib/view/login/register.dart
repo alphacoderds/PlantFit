@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:plantfit/view/login/emailVerification.dart';
 
+// Halaman pendaftaran pengguna dengan Firebase Auth
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
 
@@ -9,22 +12,78 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  // Key untuk validasi form
   final _formKey = GlobalKey<FormState>();
+
+  // Controller untuk input field
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      final email = _emailController.text;
+  // Variabel untuk menyimpan status password
+  bool _obscurePassword = true; 
+  bool _obscureConfirmPassword = true; 
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Welcome, $email!'),
-          backgroundColor: Colors.green,
-        ),
-      );
+  // Fungsi untuk proses registrasi
+  void _register() async {
+    if (_formKey.currentState!.validate()) {
+      if (_passwordController.text != _confirmPasswordController.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Password confirmation does not match'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      // Validasi email dan password
+      try {
+        FirebaseAuth.instance.setLanguageCode("id");
+
+//Daftarkan pengguna baru
+        UserCredential userCredential =
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+// ✅ Kirim email verifikasi
+        if (userCredential.user != null &&
+            !userCredential.user!.emailVerified) {
+          await userCredential.user!.sendEmailVerification();
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content:
+                  Text('Registration successful! Please verify your email.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const EmailVerificationPage(),
+          ),
+        );
+      } on FirebaseAuthException catch (e) {
+        String message;
+        if (e.code == 'email-already-in-use') {
+          message = 'Email already in use.';
+        } else if (e.code == 'weak-password') {
+          message = 'Password is too weak.';
+        } else {
+          message = 'Registration failed: ${e.message}';
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -117,10 +176,22 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(height: screenHeight * 0.02),
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -141,10 +212,23 @@ class _RegisterPageState extends State<RegisterPage> {
                     SizedBox(height: screenHeight * 0.02),
                     TextFormField(
                       controller: _confirmPasswordController,
-                      obscureText: true,
+                      obscureText: _obscureConfirmPassword,
                       decoration: InputDecoration(
                         labelText: 'Confirm Password',
                         prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirmPassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirmPassword =
+                                  !_obscureConfirmPassword;
+                            });
+                          },
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -170,7 +254,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 width: double.infinity,
                 height: screenHeight * 0.06,
                 child: ElevatedButton(
-                  onPressed: _login,
+                  onPressed: _register,
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 50),
                     backgroundColor: const Color(0xFF4D6A3F),
@@ -195,8 +279,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 height: screenHeight * 0.06,
                 child: OutlinedButton(
                   onPressed: () {
-                    Navigator.pop(
-                        context); // Jika ingin kembali ke halaman sebelumnya
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EmailVerificationPage(),
+                      ),
+                    );
+// Jika ingin kembali ke halaman sebelumnya
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF4D6A3F)),

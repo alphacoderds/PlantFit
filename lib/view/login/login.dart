@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; 
-import 'package:plantfit/view/register.dart';
-import 'package:plantfit/view/homepage.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:plantfit/view/login/register.dart';
+import 'package:plantfit/view/dashboard/homepage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,20 +16,56 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      final email = _emailController.text;
+  bool _obscurePassword = true; // ✅ Tambahkan ini
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Welcome, $email!'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pushReplacement(
-        context, 
-        MaterialPageRoute(builder: (context) => Navbar()),
-      );
+  void _login() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        UserCredential userCredential =
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        );
+
+        User? user = userCredential.user;
+
+        if (user != null && user.emailVerified) {
+          // ✅ Email sudah diverifikasi, lanjut ke halaman utama
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => Navbar()),
+          );
+        } else {
+          // ❌ Email belum diverifikasi
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Please verify your email before logging in.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+
+          await FirebaseAuth.instance
+              .signOut(); // Logout otomatis agar tidak lanjut
+        }
+      } on FirebaseAuthException catch (e) {
+        String message;
+        if (e.code == 'user-not-found') {
+          message = 'No user found for that email.';
+        } else if (e.code == 'wrong-password') {
+          message = 'Wrong password provided.';
+        } else if (e.code == 'invalid-credential') {
+          message = 'Email or password is incorrect.';
+        } else {
+          message = 'Login failed. Please try again.';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -41,7 +78,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    double screenWidth = MediaQuery.of(context).size.width; 
+    double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
@@ -85,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               Transform.translate(
-                offset: const Offset(0, -80), 
+                offset: const Offset(0, -80),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -113,6 +150,9 @@ class _LoginPageState extends State<LoginPage> {
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter your email';
+                        } else if (!value.contains('@') ||
+                            !value.contains('.')) {
+                          return 'Invalid email format';
                         }
                         return null;
                       },
@@ -120,10 +160,22 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(height: screenHeight * 0.02),
                     TextFormField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'Password',
                         prefixIcon: const Icon(Icons.lock),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword
+                                ? Icons.visibility
+                                : Icons.visibility_off,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
@@ -182,8 +234,7 @@ class _LoginPageState extends State<LoginPage> {
                     );
                   },
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(
-                        color: Color(0xFF4D6A3F)), 
+                    side: const BorderSide(color: Color(0xFF4D6A3F)),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -193,7 +244,7 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF4D6A3F), 
+                      color: Color(0xFF4D6A3F),
                     ),
                   ),
                 ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:plantfit/view/editprofile.dart';
-import 'package:plantfit/view/login.dart';
-import 'package:plantfit/view/tentangKami.dart';
+import 'package:plantfit/view/profile/editprofile.dart';
+import 'package:plantfit/view/login/login.dart';
+import 'package:plantfit/view/profile/tentangKami.dart';
 
 class ProfilePage extends StatefulWidget {
   @override

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:plantfit/view/riwayat.dart';
-import 'package:plantfit/view/riwayatModel.dart';
-import 'package:plantfit/view/hasilDeteksi.dart';
+import 'package:plantfit/view/riwayat/riwayat.dart';
+import 'package:plantfit/view/riwayat/riwayatModel.dart';
+import 'package:plantfit/view/scan/hasilDeteksi.dart';
 import 'dart:io';
 
 class DashboardPage extends StatefulWidget {

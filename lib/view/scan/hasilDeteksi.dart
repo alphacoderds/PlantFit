@@ -216,8 +216,6 @@ class HasilDeteksiPage extends StatelessWidget {
 
   Widget _buildPlantSection() {
     final plants = rekomendasiTanaman.split(', ');
-
-    // Contoh dummy image map (bisa kamu ganti dengan asset atau network)
     final plantImages = {
       'Bawang Merah': 'assets/images/rekomendasi/bawangmerah.png',
       'Bayam': 'assets/images/rekomendasi/bayam.png',
