@@ -454,7 +454,7 @@ class _ScannerPageState extends State<ScannerPage> {
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     Text("🔍 Nama Latin: $_latinName"),
                     Text(
-                        "📊 Akurasi: ${(_confidence! * 100).toStringAsFixed(2)}%"),
+                        "📊 Akurasi: ${(_confidence! * 100).toStringAsFixed(2)}"),
                     SizedBox(height: 8),
                     Text("📌 Karakteristik:",
                         style: TextStyle(fontWeight: FontWeight.bold)),

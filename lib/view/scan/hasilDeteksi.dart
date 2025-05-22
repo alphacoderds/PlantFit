@@ -84,7 +84,7 @@ class HasilDeteksiPage extends StatelessWidget {
                       Icon(Icons.verified, color: Colors.green, size: 18),
                       SizedBox(width: 4),
                       Text(
-                        'Akurasi: ${confidence.toStringAsFixed(2)}%',
+                        'Akurasi: ${confidence.toStringAsFixed(2)}',
                         style: TextStyle(
                             color: Colors.grey[700],
                             fontWeight: FontWeight.w500),
