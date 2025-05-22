@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:plantfit/view/login/emailVerification.dart';
+import 'package:plantfit/view/login/login.dart';
 
 // Halaman pendaftaran pengguna dengan Firebase Auth
 class RegisterPage extends StatefulWidget {
@@ -282,10 +283,9 @@ class _RegisterPageState extends State<RegisterPage> {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const EmailVerificationPage(),
+                        builder: (_) => const LoginPage(),
                       ),
                     );
-// Jika ingin kembali ke halaman sebelumnya
                   },
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFF4D6A3F)),

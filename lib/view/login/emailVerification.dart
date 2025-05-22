@@ -44,7 +44,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/emailVerification.png', // Ganti dengan path gambar kamu
+                'assets/images/emailVerification.png', 
                 height: screenHeight * 0.3,
               ),
               SizedBox(height: screenHeight * 0.04),
