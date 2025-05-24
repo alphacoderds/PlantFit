@@ -22,13 +22,13 @@ class DefaultFirebaseOptions {
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
-      case TargetPlatform.iOS:
-        return ios;
-      case TargetPlatform.linux:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for linux - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+      // case TargetPlatform.iOS:
+      //   return ios;
+      // case TargetPlatform.linux:
+      //   throw UnsupportedError(
+      //     'DefaultFirebaseOptions have not been configured for linux - '
+      //     'you can reconfigure this by running the FlutterFire CLI again.',
+      //   );
       default:
         throw UnsupportedError(
           'DefaultFirebaseOptions are not supported for this platform.',
@@ -54,14 +54,14 @@ class DefaultFirebaseOptions {
     storageBucket: 'plantfit-3f2ee.firebasestorage.app',
   );
 
-  static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCc1wLUqYh9VqyqnxJmGbEr-hNlWPfEe0w',
-    appId: '1:364500172149:ios:14b681f9fbc67f98aa273c',
-    messagingSenderId: '364500172149',
-    projectId: 'plantfit-3f2ee',
-    storageBucket: 'plantfit-3f2ee.firebasestorage.app',
-    iosBundleId: 'com.example.plantfit',
-  );
+  // static const FirebaseOptions ios = FirebaseOptions(
+  //   apiKey: 'AIzaSyCc1wLUqYh9VqyqnxJmGbEr-hNlWPfEe0w',
+  //   appId: '1:364500172149:ios:14b681f9fbc67f98aa273c',
+  //   messagingSenderId: '364500172149',
+  //   projectId: 'plantfit-3f2ee',
+  //   storageBucket: 'plantfit-3f2ee.firebasestorage.app',
+  //   iosBundleId: 'com.example.plantfit',
+  // );
 
   // static const FirebaseOptions macos = FirebaseOptions(
   //   apiKey: 'AIzaSyCc1wLUqYh9VqyqnxJmGbEr-hNlWPfEe0w',
