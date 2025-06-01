@@ -35,14 +35,6 @@ class _SplashScreenState extends State<SplashScreen> {
               height: 300,
             ),
             const SizedBox(height: 20),
-            // Text(
-            //   'PlantFit',
-            //   style: TextStyle(
-            //     fontSize: 24,
-            //     fontWeight: FontWeight.bold,
-            //     color: Colors.white,
-            //   ),
-            // ),
           ],
         ),
       ),

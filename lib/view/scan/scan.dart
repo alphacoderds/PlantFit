@@ -142,7 +142,7 @@ class _ScannerPageState extends State<ScannerPage> {
   Future<void> loadModel() async {
     try {
       String? res = await Tflite.loadModel(
-        model: 'assets/model/model_b.tflite',
+        model: 'assets/model/my_newmodel290525.tflite',
         labels: 'assets/model/labels.txt',
       );
       print("Model loaded successfully: $res");
@@ -160,11 +160,11 @@ class _ScannerPageState extends State<ScannerPage> {
     try {
       final resizedPath = await _resizeImageTo150(imagePath);
       final List<dynamic>? dynamicResults = await Tflite.runModelOnImage(
-        path: imagePath,
+        path: resizedPath,
         imageMean: 0.0,
         imageStd: 255.0,
-        numResults: 2,
-        threshold: 0.2,
+        numResults: 1,
+        threshold: 0.5,
         asynch: true,
       );
 
@@ -222,7 +222,7 @@ class _ScannerPageState extends State<ScannerPage> {
       final result = await predictUsingTFLite(image.path);
 
 //Confidence Threshold = 0.4
-      if (result != null && result.confidence >= 0.4) {
+      if (result != null && result.confidence >= 0.5) {
         RiwayatStorage.addRiwayat(RiwayatItem(
           label: result.label,
           latinName: result.latinName,

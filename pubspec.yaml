@@ -41,6 +41,10 @@ dependencies:
   google_fonts: ^6.1.0
   firebase_core: ^2.30.0
   firebase_auth: ^4.17.8 
+  cloud_firestore: ^4.15.0
+  shared_preferences: ^2.2.2
+  flutter_typeahead: ^4.8.0
+  
 
 dev_dependencies:
   flutter_test:
@@ -127,6 +131,8 @@ flutter:
     - assets/model/my_model.tflite
     - assets/model/model_b.tflite
     - assets/model/model_bkedua.tflite
+    - assets/model/my_newmodel9.46-280525.tflite
+    - assets/model/my_newmodel290525.tflite
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

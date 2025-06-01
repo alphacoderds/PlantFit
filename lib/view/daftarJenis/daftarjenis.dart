@@ -6,18 +6,6 @@ class DaftarJenisPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Map<String, String>> soilTypes = [
       {
-        'title': 'Regosol',
-        'description':
-            'Tanah Regosol merupakan tanah muda hasil pelapukan material vulkanik, bertekstur kasar hingga sedang, dengan kandungan bahan organik yang rendah. Regosol memiliki drainase yang baik namun mudah kering, sehingga cocok untuk tanaman palawija seperti jagung, kacang tanah, singkong, cabai, dan tomat. Pengelolaan tanah ini membutuhkan tambahan bahan organik secara rutin.',
-        'image': 'assets/images/regosol.png',
-      },
-      {
-        'title': 'Laterit',
-        'description':
-            'Tanah Laterit terbentuk di daerah tropis dengan curah hujan tinggi, kaya akan oksida besi dan aluminium, sehingga berwarna merah hingga kecokelatan. Tanah ini miskin unsur hara dan cenderung asam, sehingga memerlukan pemupukan dan pengapuran untuk meningkatkan kesuburannya. Cocok untuk tanaman keras seperti karet, kelapa sawit, kopi, kakao, dan singkong.',
-        'image': 'assets/images/laterit.png',
-      },
-      {
         'title': 'Aluvial',
         'description':
             'Tanah Aluvial berasal dari endapan lumpur sungai, biasanya ditemukan di dataran rendah. Teksturnya halus hingga sedang, kaya akan unsur hara, dan sangat subur, menjadikannya ideal untuk berbagai jenis tanaman seperti padi, jagung, sayuran, buah-buahan, dan tebu. Tanah ini mendukung pertanian intensif dengan pengolahan rutin untuk menjaga kesuburannya.',
@@ -28,6 +16,18 @@ class DaftarJenisPage extends StatelessWidget {
         'description':
             'Grumosol adalah tanah liat berat yang terbentuk dari batuan kapur atau vulkanik, berwarna kelabu hingga hitam, dan mengalami retakan besar saat musim kemarau. Tanah ini memiliki kandungan lempung tinggi dan cenderung basa, cocok untuk tanaman padi, jagung, kapas, serta tebu. Perlu pengelolaan drainase dan pengolahan intensif untuk hasil optimal.',
         'image': 'assets/images/grumosol.png',
+      },
+      {
+        'title': 'Laterit',
+        'description':
+            'Tanah Laterit terbentuk di daerah tropis dengan curah hujan tinggi, kaya akan oksida besi dan aluminium, sehingga berwarna merah hingga kecokelatan. Tanah ini miskin unsur hara dan cenderung asam, sehingga memerlukan pemupukan dan pengapuran untuk meningkatkan kesuburannya. Cocok untuk tanaman keras seperti karet, kelapa sawit, kopi, kakao, dan singkong.',
+        'image': 'assets/images/laterit.png',
+      },
+      {
+        'title': 'Regosol',
+        'description':
+            'Tanah Regosol merupakan tanah muda hasil pelapukan material vulkanik, bertekstur kasar hingga sedang, dengan kandungan bahan organik yang rendah. Regosol memiliki drainase yang baik namun mudah kering, sehingga cocok untuk tanaman palawija seperti jagung, kacang tanah, singkong, cabai, dan tomat. Pengelolaan tanah ini membutuhkan tambahan bahan organik secara rutin.',
+        'image': 'assets/images/regosol.png',
       },
       {
         'title': 'Vertisol',
