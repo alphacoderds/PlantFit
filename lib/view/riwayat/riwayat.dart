@@ -1,11 +1,8 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:plantfit/view/riwayat/riwayatModel.dart';
 import 'package:plantfit/view/scan/hasilDeteksi.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:plantfit/view/scan/dataTanah.dart';
 
 class RiwayatItem {
   final String label;
