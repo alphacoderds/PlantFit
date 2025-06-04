@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:plantfit/view/login/splashscreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:plantfit/firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:plantfit/view/login/login.dart';
+import 'package:plantfit/view/dashboard/homepage.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
   await Firebase.initializeApp(
@@ -23,5 +27,20 @@ class MyApp extends StatelessWidget {
       ),
       home: SplashScreen(), 
     );
+  }
+}
+
+class AuthChecker extends StatelessWidget {
+  const AuthChecker({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user != null && user.emailVerified) {
+      return Navbar(); // atau Homepage
+    } else {
+      return const LoginPage();
+    }
   }
 }

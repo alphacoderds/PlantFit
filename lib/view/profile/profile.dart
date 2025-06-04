@@ -153,8 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Kalau ada data dikembalikan
                 if (result != null) {
                   setState(() {
-                    nama = result[
-                        'name']; // Sesuaikan key dari EditProfilePage
+                    nama = result['name']; // Sesuaikan key dari EditProfilePage
                     phoneNumber = result['phone'];
                     gender = result['gender'];
                     location = result['location'];
@@ -170,10 +169,11 @@ class _ProfilePageState extends State<ProfilePage> {
             const SizedBox(height: 10),
             ProfileButton(
               text: 'Logout',
-              onPressed: () {
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut(); // keluar dari sesi login
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  MaterialPageRoute(builder: (context) => const LoginPage()),
                   (route) => false,
                 );
               },
