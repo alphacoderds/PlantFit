@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:plantfit/view/login/emailVerification.dart';
 import 'package:plantfit/view/login/login.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 // Halaman pendaftaran pengguna dengan Firebase Auth
 class RegisterPage extends StatefulWidget {
@@ -23,8 +24,8 @@ class _RegisterPageState extends State<RegisterPage> {
       TextEditingController();
 
   // Variabel untuk menyimpan status password
-  bool _obscurePassword = true; 
-  bool _obscureConfirmPassword = true; 
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   // Fungsi untuk proses registrasi
   void _register() async {
@@ -48,6 +49,18 @@ class _RegisterPageState extends State<RegisterPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
+        // Tambahkan kode ini untuk buat dokumen user di Firestore
+        if (userCredential.user != null) {
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(userCredential.user!.uid)
+              .set({
+            'email': _emailController.text.trim(),
+            'detectedAt': FieldValue.serverTimestamp(),
+            // Kamu bisa tambahkan field lain kalau mau
+          });
+        }
 
 // ✅ Kirim email verifikasi
         if (userCredential.user != null &&

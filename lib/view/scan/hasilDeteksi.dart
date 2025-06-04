@@ -1,15 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:plantfit/services/firebaseService.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:plantfit/view/scan/dataTanah.dart';
 
-class HasilDeteksiPage extends StatelessWidget {
+class HasilDeteksiPage extends StatefulWidget {
   final String label;
   final String latinName;
   final double confidence;
-  final String description;
-  final String handling;
   final String imagePath;
-  final String kandungan;
   final String rekomendasiTanaman;
 
   const HasilDeteksiPage({
@@ -17,19 +17,53 @@ class HasilDeteksiPage extends StatelessWidget {
     required this.label,
     required this.latinName,
     required this.confidence,
-    required this.description,
-    required this.handling,
     required this.imagePath,
-    required this.kandungan,
     required this.rekomendasiTanaman,
   }) : super(key: key);
 
   @override
+  _HasilDeteksiPageState createState() => _HasilDeteksiPageState();
+}
+
+class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
+  Map<String, dynamic>? detailTanah;
+  String rekomendasiTanaman = '';
+
+  @override
+  void initState() {
+    super.initState();
+    detailTanah = DataTanah().getDetailByNama(widget.label);
+    rekomendasiTanaman = detailTanah?['rekomendasiTanaman'] ?? '';
+    _simpanHasilDeteksi();
+  }
+
+  Future<void> _simpanHasilDeteksi() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser; // Ambil user yang login
+      if (user != null) {
+        print("✅ User yang login: ${user.uid}");
+
+        await FirebaseService.uploadDetectionResult(
+          userId: user.uid,
+          hasil: widget.label,
+          confidence: widget.confidence,
+          imageFile: File(widget.imagePath),
+        );
+        
+      } else {
+        print('User belum login, hasil deteksi tidak disimpan');
+      }
+    } catch (e) {
+      print('Gagal menyimpan hasil deteksi: $e');
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFEFF5E3),
+      backgroundColor: const Color(0xFFEFF5E3),
       appBar: AppBar(
-        backgroundColor: Color(0xFF3E6606),
+        backgroundColor: const Color(0xFF3E6606),
         elevation: 0,
         title: Text(
           'Hasil Deteksi',
@@ -38,20 +72,20 @@ class HasilDeteksiPage extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        iconTheme: IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header Section
             Container(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     color: Colors.black12,
                     blurRadius: 6,
@@ -63,38 +97,40 @@ class HasilDeteksiPage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    label,
+                    widget.label,
                     style: GoogleFonts.lora(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF3E6606),
+                      color: const Color(0xFF3E6606),
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
-                    latinName,
+                    widget.latinName,
                     style: TextStyle(
-                        fontSize: 16,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey[600]),
+                      fontSize: 16,
+                      fontStyle: FontStyle.italic,
+                      color: Colors.grey[600],
+                    ),
                   ),
-                  SizedBox(height: 8),
+                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.verified, color: Colors.green, size: 18),
-                      SizedBox(width: 4),
+                      const Icon(Icons.verified, color: Colors.green, size: 18),
+                      const SizedBox(width: 4),
                       Text(
-                        'Akurasi: ${confidence.toStringAsFixed(2)}',
+                        'Akurasi: ${widget.confidence.toStringAsFixed(2)}',
                         style: TextStyle(
-                            color: Colors.grey[700],
-                            fontWeight: FontWeight.w500),
+                          color: Colors.grey[700],
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
 
             // Image Preview
             Container(
@@ -104,53 +140,54 @@ class HasilDeteksiPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.grey[200],
               ),
-              child: imagePath.isNotEmpty
+              child: widget.imagePath.isNotEmpty &&
+                      File(widget.imagePath).existsSync()
                   ? ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.file(
-                        File(imagePath),
+                        File(widget.imagePath),
                         fit: BoxFit.cover,
                       ),
                     )
                   : Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
+                        children: const [
                           Icon(Icons.landscape, size: 50, color: Colors.grey),
-                          Text('Gambar Tanah',
+                          Text('Gambar tidak ditemukan',
                               style: TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ),
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
 
             // Deskripsi Section
             _buildSection(
               title: "Deskripsi Tanah",
               icon: Icons.info_outline,
-              color: Color(0xFF4285F4),
-              content: description,
+              color: const Color(0xFF4285F4),
+              content: detailTanah?['deskripsi'] ?? 'Data tidak tersedia',
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Kandungan Section
             _buildSection(
               title: "Kandungan Mineral",
               icon: Icons.science,
-              color: Color(0xFFEA4335),
-              content: kandungan,
+              color: const Color(0xFFEA4335),
+              content: detailTanah?['kandungan'] ?? 'Data tidak tersedia',
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Pengelolaan Section
             _buildSection(
               title: "Pengelolaan Tanah",
               icon: Icons.eco,
-              color: Color(0xFF34A853),
-              content: handling,
+              color: const Color(0xFF34A853),
+              content: detailTanah?['pengelolaan'] ?? 'Data tidak tersedia',
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
             // Rekomendasi Tanaman
             if (rekomendasiTanaman.isNotEmpty) _buildPlantSection(),
@@ -172,14 +209,14 @@ class HasilDeteksiPage extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: EdgeInsets.all(6),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 20),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               title,
               style: GoogleFonts.lora(
@@ -190,13 +227,13 @@ class HasilDeteksiPage extends StatelessWidget {
             ),
           ],
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         Container(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [
+            boxShadow: const [
               BoxShadow(
                 color: Colors.black12,
                 blurRadius: 4,
@@ -206,8 +243,11 @@ class HasilDeteksiPage extends StatelessWidget {
           ),
           child: Text(
             content,
-            style:
-                TextStyle(fontSize: 14, height: 1.6, color: Colors.grey[800]),
+            style: TextStyle(
+              fontSize: 14,
+              height: 1.6,
+              color: Colors.grey[800],
+            ),
           ),
         ),
       ],
@@ -248,7 +288,6 @@ class HasilDeteksiPage extends StatelessWidget {
       'Tembakau': 'assets/images/rekomendasi/tembakau.png',
       'Tomat': 'assets/images/rekomendasi/tomat.png',
       'Ubi Jalar': 'assets/images/rekomendasi/ubijalar.png',
-      // Tambahkan sesuai kebutuhan
     };
 
     return Column(
@@ -257,41 +296,41 @@ class HasilDeteksiPage extends StatelessWidget {
         Row(
           children: [
             Container(
-              padding: EdgeInsets.all(6),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Color(0xFFFBBC05).withOpacity(0.2),
+                color: const Color(0xFFFBBC05).withOpacity(0.2),
                 shape: BoxShape.circle,
               ),
-              child:
-                  Icon(Icons.agriculture, color: Color(0xFFFBBC05), size: 20),
+              child: const Icon(Icons.agriculture,
+                  color: Color(0xFFFBBC05), size: 20),
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               "Rekomendasi Tanaman",
               style: GoogleFonts.lora(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFFFBBC05),
+                color: const Color(0xFFFBBC05),
               ),
             ),
           ],
         ),
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         SizedBox(
           height: 140,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: plants.map((plant) {
-                final image = plantImages[plant] ??
-                    'assets/images/default.jpg'; // default fallback
+                final image =
+                    plantImages[plant.trim()] ?? 'assets/images/default.jpg';
                 return Container(
                   width: 120,
-                  margin: EdgeInsets.only(right: 12),
+                  margin: const EdgeInsets.only(right: 12),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
+                    boxShadow: const [
                       BoxShadow(
                         color: Colors.black12,
                         blurRadius: 4,
@@ -302,8 +341,8 @@ class HasilDeteksiPage extends StatelessWidget {
                   child: Column(
                     children: [
                       ClipRRect(
-                        borderRadius:
-                            BorderRadius.vertical(top: Radius.circular(12)),
+                        borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(12)),
                         child: Image.asset(
                           image,
                           height: 80,
@@ -315,7 +354,7 @@ class HasilDeteksiPage extends StatelessWidget {
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
                           plant.trim(),
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.w500,
                             fontSize: 14,
                           ),

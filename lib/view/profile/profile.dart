@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:plantfit/view/profile/editprofile.dart';
 import 'package:plantfit/view/login/login.dart';
 import 'package:plantfit/view/profile/tentangKami.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -11,10 +13,33 @@ class ProfilePage extends StatefulWidget {
 
 class _ProfilePageState extends State<ProfilePage> {
   // Ini data user
-  String nama = "Putri";
-  String phoneNumber = "+62 812-xxxx-xxx";
-  String gender = "Women";
-  String location = "Madiun";
+  String nama = "";
+  String phoneNumber = "";
+  String gender = "";
+  String location = "";
+
+  @override
+  void initState() {
+    super.initState();
+    getUserProfile();
+  }
+
+  Future<void> getUserProfile() async {
+    final userId =
+        FirebaseAuth.instance.currentUser?.uid ?? 'guest'; // sesuaikan
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+    if (doc.exists) {
+      final data = doc.data()!;
+      setState(() {
+        nama = data['name'] ?? "";
+        phoneNumber = data['phone'] ?? "";
+        gender = data['gender'] ?? "";
+        location = data['location'] ?? "";
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -116,9 +141,9 @@ class _ProfilePageState extends State<ProfilePage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => EditProfilePage(
-                      firstNameController: TextEditingController(text: nama),
-                      lastNameController: TextEditingController(),
-                      phoneNumberController: TextEditingController(text: phoneNumber),
+                      nameController: TextEditingController(text: nama),
+                      phoneNumberController:
+                          TextEditingController(text: phoneNumber),
                       genderController: TextEditingController(text: gender),
                       locationController: TextEditingController(text: location),
                     ),
@@ -128,7 +153,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 // Kalau ada data dikembalikan
                 if (result != null) {
                   setState(() {
-                    nama = result['firstName']; // Sesuaikan key dari EditProfilePage
+                    nama = result[
+                        'name']; // Sesuaikan key dari EditProfilePage
                     phoneNumber = result['phone'];
                     gender = result['gender'];
                     location = result['location'];
@@ -181,7 +207,7 @@ class ProfileDetail extends StatelessWidget {
             ),
           ),
           Text(
-            value,
+            value.isNotEmpty ? value : "Belum diisi",
             style: GoogleFonts.lora(
               fontSize: 14,
               color: Colors.white,

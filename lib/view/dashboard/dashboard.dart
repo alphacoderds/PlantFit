@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:plantfit/view/riwayat/riwayat.dart';
-import 'package:plantfit/view/riwayat/riwayatModel.dart';
 import 'package:plantfit/view/scan/hasilDeteksi.dart';
-import 'dart:io';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({Key? key}) : super(key: key);
@@ -22,22 +22,43 @@ class _DashboardPageState extends State<DashboardPage> {
     _loadLatestRiwayat();
   }
 
-  void _loadLatestRiwayat() async {
-    List<RiwayatItem> allRiwayat = await RiwayatStorage.getAllRiwayat();
-    allRiwayat.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    setState(() {
-      latestRiwayat = allRiwayat.take(10).toList();
-    });
-  }
+  Future<void> _loadLatestRiwayat() async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        print("❌ User belum login.");
+        return;
+      }
 
-  bool _isLoaded = false;
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .collection('detection_result')
+          .orderBy('timestamp', descending: true)
+          .get();
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_isLoaded) {
-      _loadLatestRiwayat();
-      _isLoaded = true;
+      final items = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return RiwayatItem(
+          label: data['hasil'] ?? '',
+          latinName: data['latinName'] ?? '',
+          confidence: (data['confidence'] ?? 0).toDouble(),
+          description: data['description'] ?? '',
+          handling: data['handling'] ?? '',
+          imagePath: data['image_url'] ?? '',
+          kandungan: data['kandungan'] ?? '',
+          rekomendasiTanaman: data['rekomendasiTanaman'] ?? '',
+          timestamp: (data['timestamp'] != null)
+              ? (data['timestamp'] as Timestamp).toDate()
+              : DateTime.now(),
+        );
+      }).toList();
+
+      setState(() {
+        latestRiwayat = items;
+      });
+    } catch (e) {
+      print('❌ Gagal memuat riwayat dari Firestore: $e');
     }
   }
 
@@ -80,7 +101,7 @@ class _DashboardPageState extends State<DashboardPage> {
     }).toList();
   }
 
-  List<Widget> _buildLegendItems(Map<String, int> soilCounts) {
+  List<Widget> _buildLegendItems(Map<String, int> soilCounts, int total) {
     final colors = {
       'Regosol': Color(0xFF4CAF50),
       'Laterit': Color(0xFF8BC34A),
@@ -94,7 +115,7 @@ class _DashboardPageState extends State<DashboardPage> {
       return _LegendItem(
         color: color,
         text:
-            '${entry.key} (${((entry.value / latestRiwayat.length) * 100).toStringAsFixed(0)}%)',
+            '${entry.key} (${((entry.value / total) * 100).toStringAsFixed(0)}%)',
         value: '${entry.value} deteksi',
       );
     }).toList();
@@ -168,10 +189,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                     label: item.label,
                                     latinName: item.latinName,
                                     confidence: item.confidence,
-                                    description: item.description,
-                                    handling: item.handling,
                                     imagePath: item.imagePath,
-                                    kandungan: item.kandungan,
                                     rekomendasiTanaman: item.rekomendasiTanaman,
                                   ),
                                 ),
@@ -193,13 +211,12 @@ class _DashboardPageState extends State<DashboardPage> {
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  (item.imagePath ?? '').isNotEmpty &&
-                                          File(item.imagePath).existsSync()
+                                  (item.imagePath ?? '').isNotEmpty
                                       ? ClipRRect(
                                           borderRadius:
                                               BorderRadius.circular(8),
-                                          child: Image.file(
-                                            File(item.imagePath),
+                                          child: Image.network(
+                                            item.imagePath,
                                             width: 120,
                                             height: 100,
                                             fit: BoxFit.cover,
@@ -207,8 +224,7 @@ class _DashboardPageState extends State<DashboardPage> {
                                                 (context, error, stackTrace) =>
                                                     Icon(Icons.broken_image,
                                                         color: Colors.grey),
-                                          ),
-                                        )
+                                          ))
                                       : Icon(Icons.landscape,
                                           size: 50, color: Colors.green),
                                   SizedBox(height: 5),
@@ -309,8 +325,9 @@ class _DashboardPageState extends State<DashboardPage> {
                     alignment: WrapAlignment.center,
                     spacing: 20,
                     runSpacing: 10,
-                    children: _buildLegendItems(_countSoilTypes(latestRiwayat)),
-                  )
+                    children: _buildLegendItems(_countSoilTypes(latestRiwayat),
+                        latestRiwayat.length), // Tambahkan argumen kedua
+                  ),
                 ],
               ),
             ),

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:plantfit/view/riwayat/riwayatModel.dart';
 import 'package:plantfit/view/scan/hasilDeteksi.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:plantfit/view/scan/dataTanah.dart';
 
 class RiwayatItem {
   final String label;
@@ -11,8 +14,8 @@ class RiwayatItem {
   final String description;
   final String handling;
   final String imagePath;
-  final String kandungan; // Tambahkan
-  final String rekomendasiTanaman; // Tambahkan
+  final String kandungan;
+  final String rekomendasiTanaman;
   final DateTime timestamp;
 
   RiwayatItem({
@@ -22,8 +25,8 @@ class RiwayatItem {
     required this.description,
     required this.handling,
     required this.imagePath,
-    required this.kandungan, 
-    required this.rekomendasiTanaman, 
+    required this.kandungan,
+    required this.rekomendasiTanaman,
     required this.timestamp,
   });
 }
@@ -38,7 +41,78 @@ class RiwayatPage extends StatefulWidget {
 enum RiwayatFilter { semua, hariIni, mingguIni, bulanIni }
 
 class _RiwayatPageState extends State<RiwayatPage> {
+  final String? userId = FirebaseAuth.instance.currentUser?.uid;
   RiwayatFilter _selectedFilter = RiwayatFilter.semua;
+  late CollectionReference _riwayatCollection;
+
+  List<RiwayatItem> _allRiwayat = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    if (userId != null) {
+      _riwayatCollection = FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId!)
+          .collection('detection_result');
+      _fetchRiwayatFromFirestore();
+    }
+  }
+
+  void _fetchRiwayatFromFirestore() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+    setState(() {
+      _isLoading = true;
+    });
+
+    if (userId == null) {
+      setState(() {
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final snapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId!)
+          .collection('detection_result')
+          .orderBy('timestamp', descending: true)
+          .get();
+
+      final riwayatList = snapshot.docs.map((doc) {
+        final data = doc.data();
+        final label = data['hasil'] ?? '';
+        return RiwayatItem(
+          label: data['hasil'] ?? '',
+          latinName: data['latinName'] ?? '',
+          confidence: (data['confidence'] ?? 0).toDouble(),
+          description: data['description'] ?? '',
+          handling: data['handling'] ?? '',
+          imagePath: data['image_url'] ?? '',
+          kandungan: data['kandungan'] ?? '',
+          rekomendasiTanaman: data['rekomendasiTanaman'] ?? '',
+          timestamp: (data['timestamp'] != null)
+              ? (data['timestamp'] as Timestamp).toDate()
+              : DateTime.now(),
+        );
+      }).toList();
+
+      setState(() {
+        _allRiwayat = riwayatList;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat riwayat: $e')),
+      );
+    }
+  }
 
   List<RiwayatItem> getFilteredRiwayat(List<RiwayatItem> list) {
     DateTime now = DateTime.now();
@@ -65,7 +139,12 @@ class _RiwayatPageState extends State<RiwayatPage> {
 
   @override
   Widget build(BuildContext context) {
-    List<RiwayatItem> riwayatList = RiwayatStorage.getAllRiwayat();
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    List<RiwayatItem> riwayatList = _allRiwayat;
     List<RiwayatItem> filteredRiwayatList = getFilteredRiwayat(riwayatList);
 
     return Scaffold(
@@ -92,7 +171,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
           ],
         ),
       ),
-       body: Column(
+      body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
@@ -148,8 +227,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
                             horizontal: 12, vertical: 6),
                         child: ListTile(
                           leading: item.imagePath.isNotEmpty
-                              ? Image.file(
-                                  File(item.imagePath),
+                              ? Image.network(
+                                  (item.imagePath),
                                   width: 60,
                                   height: 60,
                                   fit: BoxFit.cover,
@@ -175,10 +254,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                                   label: item.label,
                                   latinName: item.latinName,
                                   confidence: item.confidence,
-                                  description: item.description,
-                                  handling: item.handling,
                                   imagePath: item.imagePath,
-                                  kandungan: item.kandungan,
                                   rekomendasiTanaman: item.rekomendasiTanaman,
                                 ),
                               ),

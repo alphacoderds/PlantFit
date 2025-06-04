@@ -9,6 +9,8 @@ import 'package:plantfit/view/scan/hasilDeteksi.dart';
 import 'package:plantfit/view/riwayat/riwayat.dart';
 import 'package:plantfit/view/riwayat/riwayatModel.dart';
 import 'package:image/image.dart' as img;
+import 'package:plantfit/services/firebaseService.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Result {
   final String label;
@@ -53,6 +55,8 @@ class _ScannerPageState extends State<ScannerPage> {
   double? _confidence;
   String? _description;
   String? _handling;
+  String? _kandungan;
+  String? _rekomendasiTanaman;
 
   late DataTanah _dataTanah;
 
@@ -67,45 +71,45 @@ class _ScannerPageState extends State<ScannerPage> {
   }
 
   void _showUnrecognizedDialog() {
-  showDialog(
-    context: context,
-    barrierDismissible: false, // Mencegah pengguna menutup dialog dengan mengetuk luar dialog
-    builder: (BuildContext context) {
-      return AlertDialog(
-        backgroundColor: Colors.white, // Menambahkan warna latar belakang
-        title: Text(
-          "Gambar Tidak Dikenali",
-          textAlign: TextAlign.center, 
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF3E6606), // Menambahkan warna hijau untuk judul
-          ),
-        ),
-        content: Text(
-          "Gambar tidak dikenali sebagai jenis tanah. Harap gunakan gambar tanah yang jelas dan dengan pencahayaan yang baik.",
-          style: TextStyle(color: Colors.black87), 
-          textAlign: TextAlign.center, 
-        ),
-        actions: <Widget>[
-          TextButton(
-            child: Text(
-              "Coba Lagi",
-              style: TextStyle(color: Colors.green), 
+    showDialog(
+      context: context,
+      barrierDismissible:
+          false, // Mencegah pengguna menutup dialog dengan mengetuk luar dialog
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.white, // Menambahkan warna latar belakang
+          title: Text(
+            "Gambar Tidak Dikenali",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF3E6606), // Menambahkan warna hijau untuk judul
             ),
-            onPressed: () {
-              Navigator.of(context).pop(); // Menutup dialog
-              setState(() {
-                _lastImagePath = null; // Mengatur ulang gambar terakhir
-              });
-            },
           ),
-        ],
-      );
-    },
-  );
-}
-
+          content: Text(
+            "Gambar tidak dikenali sebagai jenis tanah. Harap gunakan gambar tanah yang jelas dan dengan pencahayaan yang baik.",
+            style: TextStyle(color: Colors.black87),
+            textAlign: TextAlign.center,
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text(
+                "Coba Lagi",
+                style: TextStyle(color: Colors.green),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop(); // Menutup dialog
+                setState(() {
+                  _lastImagePath = null; // Mengatur ulang gambar terakhir
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _initializeCamera() async {
     try {
@@ -164,7 +168,7 @@ class _ScannerPageState extends State<ScannerPage> {
         imageMean: 0.0,
         imageStd: 255.0,
         numResults: 1,
-        threshold: 0.5,
+        threshold: 0.4,
         asynch: true,
       );
 
@@ -204,6 +208,21 @@ class _ScannerPageState extends State<ScannerPage> {
     }
   }
 
+  Future<void> saveDetectionResultWithImage(
+      String userId, String hasil, double confidence, String imagePath) async {
+    try {
+      final File imageFile = File(imagePath);
+      await FirebaseService.uploadDetectionResult(
+        userId: userId,
+        hasil: hasil,
+        confidence: confidence,
+        imageFile: imageFile,
+      );
+    } catch (e) {
+      print("Error uploading detection result: $e");
+    }
+  }
+
   Future<void> takePictureAndPredict() async {
     if (_cameraController == null || !_cameraController!.value.isInitialized) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,7 +232,16 @@ class _ScannerPageState extends State<ScannerPage> {
     }
 
     if (_isProcessing) return;
-    setState(() => _isProcessing = true);
+
+    setState(() {
+      _isProcessing = true;
+      _label = null;
+      _latinName = null;
+      _confidence = null;
+      _description = null;
+      _handling = null;
+      _lastImagePath = null;
+    });
 
     try {
       final XFile image = await _cameraController!.takePicture();
@@ -221,9 +249,16 @@ class _ScannerPageState extends State<ScannerPage> {
 
       final result = await predictUsingTFLite(image.path);
 
-//Confidence Threshold = 0.4
-      if (result != null && result.confidence >= 0.5) {
-        RiwayatStorage.addRiwayat(RiwayatItem(
+      if (result != null && result.confidence >= 0.4) {
+        setState(() {
+          _label = result.label;
+          _latinName = result.latinName;
+          _confidence = result.confidence;
+          _description = result.description;
+          _handling = result.handling;
+        });
+
+        final detectionItem = RiwayatItem(
           label: result.label,
           latinName: result.latinName,
           confidence: result.confidence,
@@ -233,7 +268,22 @@ class _ScannerPageState extends State<ScannerPage> {
           kandungan: result.kandungan,
           rekomendasiTanaman: result.rekomendasiTanaman,
           timestamp: DateTime.now(),
-        ));
+        );
+
+        RiwayatStorage.addRiwayat(detectionItem);
+
+        // Ambil userId dari Firebase Auth
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId != null) {
+          await saveDetectionResultWithImage(
+            userId,
+            result.label,
+            result.confidence,
+            result.imagePath,
+          );
+        } else {
+          print("User not logged in, cannot save detection result");
+        }
 
         Navigator.push(
           context,
@@ -242,10 +292,7 @@ class _ScannerPageState extends State<ScannerPage> {
               label: result.label,
               latinName: result.latinName,
               confidence: result.confidence,
-              description: result.description,
-              handling: result.handling,
               imagePath: result.imagePath,
-              kandungan: result.kandungan,
               rekomendasiTanaman: result.rekomendasiTanaman,
             ),
           ),
@@ -280,7 +327,7 @@ class _ScannerPageState extends State<ScannerPage> {
         final result = await predictUsingTFLite(image.path);
 
         if (result != null && result.confidence >= 0.4) {
-          RiwayatStorage.addRiwayat(RiwayatItem(
+          final detectionItem = RiwayatItem(
             label: result.label,
             latinName: result.latinName,
             confidence: result.confidence,
@@ -290,7 +337,22 @@ class _ScannerPageState extends State<ScannerPage> {
             kandungan: result.kandungan,
             rekomendasiTanaman: result.rekomendasiTanaman,
             timestamp: DateTime.now(),
-          ));
+          );
+
+          RiwayatStorage.addRiwayat(detectionItem);
+
+          // Ambil userId dari Firebase Auth
+          final userId = FirebaseAuth.instance.currentUser?.uid;
+          if (userId != null) {
+            await saveDetectionResultWithImage(
+              userId,
+              result.label,
+              result.confidence,
+              result.imagePath,
+            );
+          } else {
+            print("User not logged in, cannot save detection result");
+          }
 
           Navigator.push(
             context,
@@ -299,14 +361,13 @@ class _ScannerPageState extends State<ScannerPage> {
                 label: result.label,
                 latinName: result.latinName,
                 confidence: result.confidence,
-                description: result.description,
-                handling: result.handling,
                 imagePath: result.imagePath,
-                kandungan: result.kandungan,
                 rekomendasiTanaman: result.rekomendasiTanaman,
               ),
             ),
           );
+        } else {
+          _showUnrecognizedDialog();
         }
 
         setState(() {
@@ -473,3 +534,4 @@ class _ScannerPageState extends State<ScannerPage> {
     );
   }
 }
+

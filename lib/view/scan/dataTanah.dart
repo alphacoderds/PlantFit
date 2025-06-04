@@ -76,4 +76,11 @@ class DataTanah {
           'Olah tanah saat kadar air optimal dan tambahkan bahan organik.'
     },
   ];
+ Map<String, dynamic>? getDetailByNama(String nama) {
+    try {
+      return treatment.firstWhere((element) => element['nama'] == nama);
+    } catch (e) {
+      return null;
+    }
+  }
 }
