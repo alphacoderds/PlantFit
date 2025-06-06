@@ -117,16 +117,20 @@ class _RiwayatPageState extends State<RiwayatPage> {
     return list.where((item) {
       switch (_selectedFilter) {
         case RiwayatFilter.hariIni:
-          return item.timestamp.day == now.day &&
-              item.timestamp.month == now.month &&
-              item.timestamp.year == now.year;
+          final startOfDay = DateTime(now.year, now.month, now.day);
+          final endOfDay = startOfDay.add(const Duration(days: 1));
+          return item.timestamp.isAfter(startOfDay) &&
+              item.timestamp.isBefore(endOfDay);
+
         case RiwayatFilter.mingguIni:
           DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
           return item.timestamp.isAfter(startOfWeek) &&
               item.timestamp.isBefore(now.add(const Duration(days: 1)));
+              
         case RiwayatFilter.bulanIni:
           return item.timestamp.month == now.month &&
               item.timestamp.year == now.year;
+              
         case RiwayatFilter.semua:
         default:
           return true;

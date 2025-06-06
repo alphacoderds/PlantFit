@@ -29,7 +29,7 @@ class FirebaseService {
       final detectionData = {
         'hasil': hasil,
         'confidence': confidence,
-        'image_url': imageUrl, // bisa kosong atau dummy jika tidak upload
+        'image_url': imageUrl, 
         'timestamp': FieldValue.serverTimestamp(),
       };
 

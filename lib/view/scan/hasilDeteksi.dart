@@ -28,13 +28,17 @@ class HasilDeteksiPage extends StatefulWidget {
 class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
   Map<String, dynamic>? detailTanah;
   String rekomendasiTanaman = '';
+  bool _hasSaved = false; 
 
   @override
   void initState() {
     super.initState();
     detailTanah = DataTanah().getDetailByNama(widget.label);
     rekomendasiTanaman = detailTanah?['rekomendasiTanaman'] ?? '';
-    _simpanHasilDeteksi();
+
+   if (!_hasSaved) {
+      _hasSaved = true; // Tandai bahwa hasil sudah disimpan
+    }
   }
 
   Future<void> _simpanHasilDeteksi() async {
@@ -49,7 +53,6 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
           confidence: widget.confidence,
           imageFile: File(widget.imagePath),
         );
-        
       } else {
         print('User belum login, hasil deteksi tidak disimpan');
       }
@@ -323,7 +326,7 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
             child: Row(
               children: plants.map((plant) {
                 final image =
-                    plantImages[plant.trim()] ?? 'assets/images/default.jpg';
+                    plantImages[plant.trim()] ?? 'assets/images/plantfit.jpg';
                 return Container(
                   width: 120,
                   margin: const EdgeInsets.only(right: 12),

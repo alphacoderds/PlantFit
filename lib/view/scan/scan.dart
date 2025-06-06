@@ -11,6 +11,8 @@ import 'package:plantfit/view/riwayat/riwayatModel.dart';
 import 'package:image/image.dart' as img;
 import 'package:plantfit/services/firebaseService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:plantfit/view/scan/offlineQueue.dart';
 
 class Result {
   final String label;
@@ -48,6 +50,8 @@ class _ScannerPageState extends State<ScannerPage> {
   String? _lastImagePath;
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
+  bool _isUploading = false;
+  bool _hasDetected = false;
 
   // Hasil prediksi
   String? _label;
@@ -67,6 +71,18 @@ class _ScannerPageState extends State<ScannerPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeCamera();
       loadModel();
+      _syncOfflineData();
+    });
+  }
+
+  void _resetDetectionState() {
+    setState(() {
+      _label = null;
+      _latinName = null;
+      _confidence = null;
+      _description = null;
+      _handling = null;
+      _lastImagePath = null;
     });
   }
 
@@ -138,7 +154,8 @@ class _ScannerPageState extends State<ScannerPage> {
     if (image == null) throw Exception("Gagal decode image");
     img.Image resized = img.copyResize(image, width: 150, height: 150);
 
-    final resizedPath = path.replaceFirst('.jpg', '_resized.jpg');
+    final resizedPath = path.replaceAll(RegExp(r'\.\w+$'), '_resized.jpg');
+
     await File(resizedPath).writeAsBytes(img.encodeJpg(resized));
     return resizedPath;
   }
@@ -210,16 +227,63 @@ class _ScannerPageState extends State<ScannerPage> {
 
   Future<void> saveDetectionResultWithImage(
       String userId, String hasil, double confidence, String imagePath) async {
+    if (_isUploading) return;
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    final detectionData = {
+      "userId": userId,
+      "hasil": hasil,
+      "confidence": confidence,
+      "imagePath": imagePath,
+      "timestamp": DateTime.now().toIso8601String()
+    };
+
     try {
       final File imageFile = File(imagePath);
-      await FirebaseService.uploadDetectionResult(
-        userId: userId,
-        hasil: hasil,
-        confidence: confidence,
-        imageFile: imageFile,
-      );
+
+      if (await isConnected()) {
+        await FirebaseService.uploadDetectionResult(
+          userId: userId,
+          hasil: hasil,
+          confidence: confidence,
+          imageFile: imageFile,
+        );
+      } else {
+        await OfflineQueue.addToQueue(detectionData); // ✅ Tambahkan ini
+        print("Tidak ada koneksi. Disimpan ke antrean offline.");
+      }
     } catch (e) {
-      print("Error uploading detection result: $e");
+      print("Error uploading or queuing detection result: $e");
+    } finally {
+      _isUploading = false;
+    }
+  }
+
+  Future<bool> isConnected() async {
+    var connectivityResult = await Connectivity().checkConnectivity();
+    return connectivityResult != ConnectivityResult.none;
+  }
+
+  void _syncOfflineData() async {
+    if (await isConnected()) {
+      final queue = await OfflineQueue.getQueue();
+      for (final item in queue) {
+        try {
+          final file = File(item['imagePath']);
+          await FirebaseService.uploadDetectionResult(
+            userId: item['userId'],
+            hasil: item['hasil'],
+            confidence: item['confidence'],
+            imageFile: file,
+          );
+        } catch (e) {
+          print("Gagal upload data dari antrean offline: $e");
+        }
+      }
+      await OfflineQueue.clearQueue();
     }
   }
 
@@ -231,10 +295,11 @@ class _ScannerPageState extends State<ScannerPage> {
       return;
     }
 
-    if (_isProcessing) return;
+    if (_isProcessing || _hasDetected) return;
 
     setState(() {
       _isProcessing = true;
+      _hasDetected = true;
       _label = null;
       _latinName = null;
       _confidence = null;
@@ -285,7 +350,7 @@ class _ScannerPageState extends State<ScannerPage> {
           print("User not logged in, cannot save detection result");
         }
 
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => HasilDeteksiPage(
@@ -299,6 +364,11 @@ class _ScannerPageState extends State<ScannerPage> {
         );
 
         setState(() {
+          _label = null;
+          _latinName = null;
+          _confidence = null;
+          _description = null;
+          _handling = null;
           _lastImagePath = null;
         });
       } else {
@@ -354,7 +424,7 @@ class _ScannerPageState extends State<ScannerPage> {
             print("User not logged in, cannot save detection result");
           }
 
-          Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => HasilDeteksiPage(
@@ -366,13 +436,18 @@ class _ScannerPageState extends State<ScannerPage> {
               ),
             ),
           );
+
+          setState(() {
+            _label = null;
+            _latinName = null;
+            _confidence = null;
+            _description = null;
+            _handling = null;
+            _lastImagePath = null;
+          });
         } else {
           _showUnrecognizedDialog();
         }
-
-        setState(() {
-          _lastImagePath = null;
-        });
       } else {
         _showUnrecognizedDialog();
       }
@@ -534,4 +609,3 @@ class _ScannerPageState extends State<ScannerPage> {
     );
   }
 }
-
