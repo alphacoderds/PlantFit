@@ -370,6 +370,7 @@ class _ScannerPageState extends State<ScannerPage> {
           _description = null;
           _handling = null;
           _lastImagePath = null;
+          _hasDetected = false; // Reset state after detection
         });
       } else {
         _showUnrecognizedDialog();
@@ -510,8 +511,8 @@ class _ScannerPageState extends State<ScannerPage> {
                   SizedBox(width: 10),
                   Expanded(
                     child: Text(
-                      "Pastikan kondisi tanah normal dan gambar jelas dengan pencahayaan baik dan latar belakang sederhana. "
-                      "Aplikasi akan memproses dan menampilkan hasil jenis tanah Anda secara otomatis setelah melakukan klik deteksi.",
+                      "Pastikan kondisi sample tanah normal dan gambar jelas dengan pencahayaan baik dan latar belakang sederhana. "
+                      "Aplikasi akan memproses dan menampilkan hasil jenis tanah secara otomatis setelah melakukan klik deteksi.",
                       style: TextStyle(color: Colors.black87, fontSize: 12),
                       textAlign: TextAlign.justify,
                     ),

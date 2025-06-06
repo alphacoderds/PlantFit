@@ -65,7 +65,9 @@ class _DashboardPageState extends State<DashboardPage> {
   Map<String, int> _countSoilTypes(List<RiwayatItem> items) {
     Map<String, int> counts = {};
     for (var item in items) {
-      counts[item.label] = (counts[item.label] ?? 0) + 1;
+      String label =
+          (item.label.trim().isEmpty) ? 'Tidak Diketahui' : item.label.trim();
+      counts[label] = (counts[label] ?? 0) + 1;
     }
     return counts;
   }
@@ -76,9 +78,10 @@ class _DashboardPageState extends State<DashboardPage> {
     final colors = {
       'Regosol': Color(0xFF4CAF50),
       'Laterit': Color(0xFF8BC34A),
-      'Aluvial': Color(0xFFFFDF88),
+      'Alluvial': Color(0xFFFFDF88),
       'Grumosol': Color(0xFFFFA55D),
       'Vertisol': Color(0xFFA76545),
+      'Tidak Diketahui': Color(0xFFCB0A0A),
     };
 
     return soilCounts.entries.map((entry) {
@@ -105,13 +108,18 @@ class _DashboardPageState extends State<DashboardPage> {
     final colors = {
       'Regosol': Color(0xFF4CAF50),
       'Laterit': Color(0xFF8BC34A),
-      'Aluvial': Color(0xFFFFDF88),
+      'Alluvial': Color(0xFFFFDF88),
       'Grumosol': Color(0xFFFFA55D),
       'Vertisol': Color(0xFFA76545),
+      'Tidak Diketahui': Color(0xFFCB0A0A),
     };
 
     return soilCounts.entries.map((entry) {
-      final color = colors[entry.key] ?? Colors.grey;
+      final color = colors[entry.key.trim().isEmpty
+              ? 'Tidak Diketahui'
+              : entry.key.trim()] ??
+          Colors.grey;
+
       return _LegendItem(
         color: color,
         text:
@@ -353,7 +361,7 @@ class _ChartBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        text,
+        text.isEmpty ? 'Tidak Diketahui' : text,
         style: GoogleFonts.lora(
           fontSize: 10,
           fontWeight: FontWeight.bold,

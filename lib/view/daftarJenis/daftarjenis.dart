@@ -6,10 +6,10 @@ class DaftarJenisPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Map<String, String>> soilTypes = [
       {
-        'title': 'Aluvial',
+        'title': 'Alluvial',
         'description':
-            'Tanah Aluvial berasal dari endapan lumpur sungai, biasanya ditemukan di dataran rendah. Teksturnya halus hingga sedang, kaya akan unsur hara, dan sangat subur, menjadikannya ideal untuk berbagai jenis tanaman seperti padi, jagung, sayuran, buah-buahan, dan tebu. Tanah ini mendukung pertanian intensif dengan pengolahan rutin untuk menjaga kesuburannya.',
-        'image': 'assets/images/aluvial.png',
+            'Tanah Alluvial berasal dari endapan lumpur sungai, biasanya ditemukan di dataran rendah. Teksturnya halus hingga sedang, kaya akan unsur hara, dan sangat subur, menjadikannya ideal untuk berbagai jenis tanaman seperti padi, jagung, sayuran, buah-buahan, dan tebu. Tanah ini mendukung pertanian intensif dengan pengolahan rutin untuk menjaga kesuburannya.',
+        'image': 'assets/images/alluvial.png',
       },
       {
         'title': 'Grumosol',
