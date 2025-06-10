@@ -47,20 +47,22 @@ class _ScannerPageState extends State<ScannerPage> {
   int _selectedIndex = 2;
   CameraController? _cameraController;
   List<CameraDescription>? _cameras;
-  String? _lastImagePath;
+
   bool _isCameraInitialized = false;
   bool _isProcessing = false;
   bool _isUploading = false;
   bool _hasDetected = false;
+  bool _hasSavedResult = false;
 
   // Hasil prediksi
-  String? _label;
-  String? _latinName;
+  String? _label,
+      _latinName,
+      _description,
+      _handling,
+      _kandungan,
+      _rekomendasiTanaman;
   double? _confidence;
-  String? _description;
-  String? _handling;
-  String? _kandungan;
-  String? _rekomendasiTanaman;
+  String? _lastImagePath;
 
   late DataTanah _dataTanah;
 
@@ -93,14 +95,14 @@ class _ScannerPageState extends State<ScannerPage> {
           false, // Mencegah pengguna menutup dialog dengan mengetuk luar dialog
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: Colors.white, // Menambahkan warna latar belakang
+          backgroundColor: Colors.white,
           title: Text(
             "Gambar Tidak Dikenali",
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF3E6606), // Menambahkan warna hijau untuk judul
+              color: Color(0xFF3E6606),
             ),
           ),
           content: Text(
@@ -225,42 +227,88 @@ class _ScannerPageState extends State<ScannerPage> {
     }
   }
 
-  Future<void> saveDetectionResultWithImage(
-      String userId, String hasil, double confidence, String imagePath) async {
-    if (_isUploading) return;
+  Future<void> _detectImage(File image) async {
+    final result = await predictUsingTFLite(image.path);
 
-    setState(() {
-      _isUploading = true;
-    });
-
-    final detectionData = {
-      "userId": userId,
-      "hasil": hasil,
-      "confidence": confidence,
-      "imagePath": imagePath,
-      "timestamp": DateTime.now().toIso8601String()
-    };
-
-    try {
-      final File imageFile = File(imagePath);
-
-      if (await isConnected()) {
-        await FirebaseService.uploadDetectionResult(
-          userId: userId,
-          hasil: hasil,
-          confidence: confidence,
-          imageFile: imageFile,
-        );
-      } else {
-        await OfflineQueue.addToQueue(detectionData); // ✅ Tambahkan ini
-        print("Tidak ada koneksi. Disimpan ke antrean offline.");
-      }
-    } catch (e) {
-      print("Error uploading or queuing detection result: $e");
-    } finally {
-      _isUploading = false;
+    if (result == null || result.confidence < 0.4) {
+      _showUnrecognizedDialog();
+      return;
     }
+
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await saveDetectionResultWithImage(userId, result);
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HasilDeteksiPage(
+          label: result.label,
+          latinName: result.latinName,
+          confidence: result.confidence,
+          imagePath: result.imagePath,
+          rekomendasiTanaman: result.rekomendasiTanaman,
+        ),
+      ),
+    );
   }
+
+  // Future<void> saveDetectionResultWithImage(
+  //     String userId, String hasil, double confidence, String imagePath) async {
+  //   if (_isUploading || _hasSavedResult) return;
+
+Future<void> saveDetectionResultWithImage(String userId, Result result) async {
+  if (_isUploading || _hasSavedResult) {
+    print("Skip saving: already uploading or saved.");
+    return;
+  }
+  
+  _isUploading = true;
+  _hasSavedResult = true;  // Pindah flag ini jadi true duluan supaya dipanggil kedua kali langsung skip
+
+  final detectionData = {
+    "userId": userId,
+    "hasil": result.label,
+    "confidence": result.confidence,
+    "imagePath": result.imagePath,
+    "timestamp": DateTime.now().toIso8601String()
+  };
+
+  try {
+    final imageFile = File(result.imagePath);
+    if (await isConnected()) {
+      await FirebaseService.uploadDetectionResult(
+        userId: userId,
+        hasil: result.label,
+        confidence: result.confidence,
+        imageFile: imageFile,
+      );
+    } else {
+      await OfflineQueue.addToQueue(detectionData);
+      print("Tidak ada koneksi. Disimpan ke antrean offline.");
+    }
+
+    final detectionItem = RiwayatItem(
+      label: result.label,
+      latinName: result.latinName,
+      confidence: result.confidence,
+      description: result.description,
+      handling: result.handling,
+      imagePath: result.imagePath,
+      kandungan: result.kandungan,
+      rekomendasiTanaman: result.rekomendasiTanaman,
+      timestamp: DateTime.now(),
+    );
+    RiwayatStorage.addRiwayat(detectionItem);
+
+  } catch (e) {
+    print("Error saat simpan hasil deteksi: $e");
+    _hasSavedResult = false; // Reset kalau gagal agar bisa coba lagi
+  } finally {
+    _isUploading = false;
+  }
+}
 
   Future<bool> isConnected() async {
     var connectivityResult = await Connectivity().checkConnectivity();
@@ -270,20 +318,27 @@ class _ScannerPageState extends State<ScannerPage> {
   void _syncOfflineData() async {
     if (await isConnected()) {
       final queue = await OfflineQueue.getQueue();
-      for (final item in queue) {
-        try {
-          final file = File(item['imagePath']);
-          await FirebaseService.uploadDetectionResult(
-            userId: item['userId'],
-            hasil: item['hasil'],
-            confidence: item['confidence'],
-            imageFile: file,
+      if (queue.isNotEmpty) {
+        for (final item in queue) {
+          try {
+            final file = File(item['imagePath']);
+            await FirebaseService.uploadDetectionResult(
+              userId: item['userId'],
+              hasil: item['hasil'],
+              confidence: item['confidence'],
+              imageFile: file,
+            );
+          } catch (e) {
+            print("Gagal upload data dari antrean offline: $e");
+          }
+        }
+        await OfflineQueue.clearQueue();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Data offline berhasil disinkronkan.")),
           );
-        } catch (e) {
-          print("Gagal upload data dari antrean offline: $e");
         }
       }
-      await OfflineQueue.clearQueue();
     }
   }
 
@@ -295,7 +350,8 @@ class _ScannerPageState extends State<ScannerPage> {
       return;
     }
 
-    if (_isProcessing || _hasDetected) return;
+    if (_isProcessing || _hasDetected) return; // Cegah multiple scan
+    _hasSavedResult = false; // Reset flag
 
     setState(() {
       _isProcessing = true;
@@ -323,31 +379,11 @@ class _ScannerPageState extends State<ScannerPage> {
           _handling = result.handling;
         });
 
-        final detectionItem = RiwayatItem(
-          label: result.label,
-          latinName: result.latinName,
-          confidence: result.confidence,
-          description: result.description,
-          handling: result.handling,
-          imagePath: result.imagePath,
-          kandungan: result.kandungan,
-          rekomendasiTanaman: result.rekomendasiTanaman,
-          timestamp: DateTime.now(),
-        );
-
-        RiwayatStorage.addRiwayat(detectionItem);
-
-        // Ambil userId dari Firebase Auth
         final userId = FirebaseAuth.instance.currentUser?.uid;
-        if (userId != null) {
-          await saveDetectionResultWithImage(
-            userId,
-            result.label,
-            result.confidence,
-            result.imagePath,
-          );
-        } else {
-          print("User not logged in, cannot save detection result");
+
+        if (userId != null && !_hasSavedResult) {
+          await saveDetectionResultWithImage(userId, result);
+          _hasSavedResult = true; // Tandai sudah disimpan
         }
 
         await Navigator.push(
@@ -370,7 +406,7 @@ class _ScannerPageState extends State<ScannerPage> {
           _description = null;
           _handling = null;
           _lastImagePath = null;
-          _hasDetected = false; // Reset state after detection
+          _hasDetected = false; // Reset deteksi aktif
         });
       } else {
         _showUnrecognizedDialog();
@@ -387,7 +423,10 @@ class _ScannerPageState extends State<ScannerPage> {
 
   Future<void> pickImageFromGallery() async {
     if (_isProcessing) return;
-    setState(() => _isProcessing = true);
+    setState(() {
+      _isProcessing = true;
+      _hasSavedResult = false;
+    });
 
     try {
       final ImagePicker picker = ImagePicker();
@@ -410,17 +449,11 @@ class _ScannerPageState extends State<ScannerPage> {
             timestamp: DateTime.now(),
           );
 
-          RiwayatStorage.addRiwayat(detectionItem);
-
           // Ambil userId dari Firebase Auth
           final userId = FirebaseAuth.instance.currentUser?.uid;
-          if (userId != null) {
-            await saveDetectionResultWithImage(
-              userId,
-              result.label,
-              result.confidence,
-              result.imagePath,
-            );
+          if (userId != null && !_hasSavedResult) {
+            await saveDetectionResultWithImage(userId, result);
+            _hasSavedResult = true; // Tandai bahwa hasil sudah disimpan
           } else {
             print("User not logged in, cannot save detection result");
           }

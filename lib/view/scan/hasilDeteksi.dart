@@ -4,6 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:plantfit/services/firebaseService.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:plantfit/view/scan/dataTanah.dart';
+import 'package:plantfit/services/backendService.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:plantfit/view/scan/offlineQueue.dart';
 
 class HasilDeteksiPage extends StatefulWidget {
   final String label;
@@ -28,7 +31,8 @@ class HasilDeteksiPage extends StatefulWidget {
 class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
   Map<String, dynamic>? detailTanah;
   String rekomendasiTanaman = '';
-  bool _hasSaved = false; 
+  bool _isSaving = false; // untuk mencegah simpan ganda
+  String? uploadedImageUrl;
 
   @override
   void initState() {
@@ -36,33 +40,91 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
     detailTanah = DataTanah().getDetailByNama(widget.label);
     rekomendasiTanaman = detailTanah?['rekomendasiTanaman'] ?? '';
 
-   if (!_hasSaved) {
-      _hasSaved = true; // Tandai bahwa hasil sudah disimpan
-    }
+    // HILANGKAN penyimpanan otomatis di initState:
+    // _simpanHasilDeteksi dipanggil secara manual bila perlu
   }
 
   Future<void> _simpanHasilDeteksi() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser; // Ambil user yang login
-      if (user != null) {
-        print("✅ User yang login: ${user.uid}");
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
 
-        await FirebaseService.uploadDetectionResult(
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Anda belum login.')),
+        );
+        return;
+      }
+
+      final connectivityResult = await Connectivity().checkConnectivity();
+      final isOnline = connectivityResult != ConnectivityResult.none;
+
+      final imageFile = File(widget.imagePath);
+      if (!imageFile.existsSync()) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Gambar tidak ditemukan.')),
+        );
+        return;
+      }
+
+      if (isOnline) {
+        // Upload ke Firestore + Storage
+        final detectionRef =
+            await FirebaseService.saveDetectionResultWithReference(
           userId: user.uid,
           hasil: widget.label,
           confidence: widget.confidence,
-          imageFile: File(widget.imagePath),
+          imageFile: imageFile,
+        );
+
+        try {
+          final imageUrl = await CloudStorageService().uploadImageToBackend(
+            imageFile: imageFile,
+            userId: user.uid,
+            detectionId: detectionRef.id,
+          );
+          if (imageUrl != null) {
+            await detectionRef.update({'image_url': imageUrl});
+          }
+        } catch (e) {
+          print("⚠️ Gagal upload gambar: $e");
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data berhasil disimpan online.')),
         );
       } else {
-        print('User belum login, hasil deteksi tidak disimpan');
+        // Simpan ke queue offline
+        final detectionData = {
+          'userId': user.uid,
+          'hasil': widget.label,
+          'confidence': widget.confidence,
+          'imagePath': widget.imagePath,
+          'timestamp': DateTime.now().toIso8601String(),
+        };
+
+        await OfflineQueue.addToQueue(detectionData);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Offline: Data disimpan sementara.')),
+        );
       }
     } catch (e) {
-      print('Gagal menyimpan hasil deteksi: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saat menyimpan: $e')),
+      );
+    } finally {
+      setState(() => _isSaving = false);
     }
   }
 
+  // Bila ingin, bisa sediakan tombol simpan manual:
+  // Atau panggil _simpanHasilDeteksi dari halaman sebelumnya, agar lebih terkontrol
+
   @override
   Widget build(BuildContext context) {
+    final bool isUrl = widget.imagePath.startsWith('http');
     return Scaffold(
       backgroundColor: const Color(0xFFEFF5E3),
       appBar: AppBar(
@@ -76,6 +138,13 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save),
+            tooltip: 'Simpan Hasil Deteksi',
+            onPressed: _simpanHasilDeteksi,
+          )
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

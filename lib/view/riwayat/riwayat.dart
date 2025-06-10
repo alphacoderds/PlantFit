@@ -58,30 +58,17 @@ class _RiwayatPageState extends State<RiwayatPage> {
   }
 
   void _fetchRiwayatFromFirestore() async {
-    final userId = FirebaseAuth.instance.currentUser?.uid;
-    if (userId == null) return;
     setState(() {
       _isLoading = true;
     });
 
-    if (userId == null) {
-      setState(() {
-        _isLoading = false;
-      });
-      return;
-    }
-
     try {
-      final snapshot = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId!)
-          .collection('detection_result')
+      final snapshot = await _riwayatCollection
           .orderBy('timestamp', descending: true)
           .get();
 
       final riwayatList = snapshot.docs.map((doc) {
-        final data = doc.data();
-        final label = data['hasil'] ?? '';
+        final data = doc.data() as Map<String, dynamic>;
         return RiwayatItem(
           label: data['hasil'] ?? '',
           latinName: data['latinName'] ?? '',
@@ -98,6 +85,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
       }).toList();
 
       setState(() {
+        _allRiwayat.clear(); // ✅ Hindari penumpukan data
         _allRiwayat = riwayatList;
         _isLoading = false;
       });
@@ -126,11 +114,11 @@ class _RiwayatPageState extends State<RiwayatPage> {
           DateTime startOfWeek = now.subtract(Duration(days: now.weekday - 1));
           return item.timestamp.isAfter(startOfWeek) &&
               item.timestamp.isBefore(now.add(const Duration(days: 1)));
-              
+
         case RiwayatFilter.bulanIni:
           return item.timestamp.month == now.month &&
               item.timestamp.year == now.year;
-              
+
         case RiwayatFilter.semua:
         default:
           return true;
@@ -145,8 +133,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
         body: Center(child: CircularProgressIndicator()),
       );
     }
-    List<RiwayatItem> riwayatList = _allRiwayat;
-    List<RiwayatItem> filteredRiwayatList = getFilteredRiwayat(riwayatList);
+
+    List<RiwayatItem> filteredRiwayatList = getFilteredRiwayat(_allRiwayat);
 
     return Scaffold(
       backgroundColor: const Color(0xFFEFF5E3),
@@ -229,7 +217,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                         child: ListTile(
                           leading: item.imagePath.isNotEmpty
                               ? Image.network(
-                                  (item.imagePath),
+                                  item.imagePath,
                                   width: 60,
                                   height: 60,
                                   fit: BoxFit.cover,
@@ -256,7 +244,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
                                   latinName: item.latinName,
                                   confidence: item.confidence,
                                   imagePath: item.imagePath,
-                                  rekomendasiTanaman: item.rekomendasiTanaman,
+                                  rekomendasiTanaman:
+                                      item.rekomendasiTanaman,
                                 ),
                               ),
                             );
