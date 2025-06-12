@@ -17,7 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _obscurePassword = true; 
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -83,11 +83,80 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(message),
-            backgroundColor: Colors.red,
+            backgroundColor: const Color(0xFFB22222),
           ),
         );
       }
     }
+  }
+
+  void _showForgotPasswordDialog() {
+    final TextEditingController _resetEmailController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFFF5FBEF), 
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        title: const Text('Reset Password'),
+        content: TextField(
+          controller: _resetEmailController,
+          decoration: const InputDecoration(
+            labelText: 'Enter your email',
+          ),
+          keyboardType: TextInputType.emailAddress,
+        ),
+        actions: [
+          TextButton(
+            style: TextButton.styleFrom(
+              foregroundColor: Color(0xFF4D6A3F),
+            ),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF4D6A3F),
+            ),
+            onPressed: () async {
+              final email = _resetEmailController.text.trim();
+              if (email.isEmpty || !email.contains('@')) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Please enter a valid email.'),
+                    backgroundColor: Color(0xFFB22222),
+                  ),
+                );
+                return;
+              }
+
+              try {
+                await FirebaseAuth.instance
+                    .sendPasswordResetEmail(email: email);
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Password reset email sent.'),
+                    backgroundColor: Color(0xFF4D6A3F),
+                  ),
+                );
+              } on FirebaseAuthException catch (e) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(e.message ?? 'Error sending reset email.'),
+                    backgroundColor: const Color(0xFFB22222),
+                  ),
+                );
+              }
+            },
+            child: const Text('Send', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -217,6 +286,21 @@ class _LoginPageState extends State<LoginPage> {
                           }
                           return null;
                         },
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            _showForgotPasswordDialog();
+                          },
+                          child: Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              color: Color(0xFF4D6A3F),
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),

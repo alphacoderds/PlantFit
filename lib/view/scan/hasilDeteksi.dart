@@ -39,9 +39,6 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
     super.initState();
     detailTanah = DataTanah().getDetailByNama(widget.label);
     rekomendasiTanaman = detailTanah?['rekomendasiTanaman'] ?? '';
-
-    // HILANGKAN penyimpanan otomatis di initState:
-    // _simpanHasilDeteksi dipanggil secara manual bila perlu
   }
 
   Future<void> _simpanHasilDeteksi() async {
@@ -97,7 +94,7 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
             await detectionRef.update({'image_url': imageUrl});
           }
         } catch (e) {
-          print("⚠️ Gagal upload gambar: $e");
+          print("Gagal upload gambar: $e");
         }
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -127,9 +124,6 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
       setState(() => _isSaving = false);
     }
   }
-
-  // Bila ingin, bisa sediakan tombol simpan manual:
-  // Atau panggil _simpanHasilDeteksi dari halaman sebelumnya, agar lebih terkontrol
 
   @override
   Widget build(BuildContext context) {
@@ -205,9 +199,7 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // Image Preview
-            // Gambar preview
+            
             Container(
               height: 200,
               width: double.infinity,
