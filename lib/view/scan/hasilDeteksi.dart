@@ -45,7 +45,16 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
   }
 
   Future<void> _simpanHasilDeteksi() async {
-    if (_isSaving) return;
+    if (_isSaving)
+      Stack(
+        children: [
+          Opacity(
+              opacity: 0.4,
+              child: ModalBarrier(dismissible: false, color: Colors.black)),
+          const Center(child: CircularProgressIndicator()),
+        ],
+      );
+
     setState(() => _isSaving = true);
 
     try {
@@ -138,13 +147,6 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
           ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save),
-            tooltip: 'Simpan Hasil Deteksi',
-            onPressed: _simpanHasilDeteksi,
-          )
-        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -205,6 +207,7 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
             const SizedBox(height: 16),
 
             // Image Preview
+            // Gambar preview
             Container(
               height: 200,
               width: double.infinity,
@@ -212,26 +215,28 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
                 borderRadius: BorderRadius.circular(12),
                 color: Colors.grey[200],
               ),
-              child: widget.imagePath.isNotEmpty &&
-                      File(widget.imagePath).existsSync()
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.file(
-                        File(widget.imagePath),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: isUrl
+                    ? Image.network(
+                        widget.imagePath,
                         fit: BoxFit.cover,
-                      ),
-                    )
-                  : Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: const [
-                          Icon(Icons.landscape, size: 50, color: Colors.grey),
-                          Text('Gambar tidak ditemukan',
-                              style: TextStyle(color: Colors.grey)),
-                        ],
-                      ),
-                    ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Center(child: Text("Gagal memuat gambar.")),
+                      )
+                    : File(widget.imagePath).existsSync()
+                        ? Image.file(
+                            File(widget.imagePath),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                const Center(
+                                    child: Text("Gagal memuat gambar lokal.")),
+                          )
+                        : const Center(
+                            child: Text("Gambar lokal tidak ditemukan.")),
+              ),
             ),
+
             const SizedBox(height: 24),
 
             // Deskripsi Section

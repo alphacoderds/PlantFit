@@ -19,8 +19,8 @@ class FirebaseService {
     }
   }
 
-  /// Simpan hasil deteksi + upload gambar (utama)
-  static Future<void> uploadDetectionResult({
+  /// Simpan hasil deteksi + upload gambar (utama) dan kembalikan imageUrl
+  static Future<String> uploadDetectionResult({
     required String userId,
     required String hasil,
     required double confidence,
@@ -31,7 +31,7 @@ class FirebaseService {
       String imageUrl = '';
       DocumentReference? docRef;
 
-      // Tambah data Firestore dengan image_url kosong lebih dulu
+      // Tambah data Firestore dengan image_url kosong terlebih dahulu
       docRef = await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -56,15 +56,18 @@ class FirebaseService {
 
       print("🔗 URL gambar yang didapat: $imageUrl");
 
-      // Periksa & update URL gambar ke Firestore
+      // Update URL gambar di Firestore jika valid
       if (imageUrl.isNotEmpty && Uri.tryParse(imageUrl)?.hasAbsolutePath == true) {
         await docRef.update({'image_url': imageUrl});
         print("✅ Gambar berhasil diupdate di Firestore.");
       } else {
         print("⚠️ URL gambar kosong atau tidak valid.");
       }
+
+      return imageUrl; // ⬅️ Kembalikan URL
     } catch (e) {
       print("❌ Gagal menyimpan hasil deteksi: $e");
+      return '';
     }
   }
 

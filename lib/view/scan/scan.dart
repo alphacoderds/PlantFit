@@ -258,57 +258,67 @@ class _ScannerPageState extends State<ScannerPage> {
   //     String userId, String hasil, double confidence, String imagePath) async {
   //   if (_isUploading || _hasSavedResult) return;
 
-Future<void> saveDetectionResultWithImage(String userId, Result result) async {
-  if (_isUploading || _hasSavedResult) {
-    print("Skip saving: already uploading or saved.");
-    return;
-  }
-  
-  _isUploading = true;
-  _hasSavedResult = true;  // Pindah flag ini jadi true duluan supaya dipanggil kedua kali langsung skip
-
-  final detectionData = {
-    "userId": userId,
-    "hasil": result.label,
-    "confidence": result.confidence,
-    "imagePath": result.imagePath,
-    "timestamp": DateTime.now().toIso8601String()
-  };
-
-  try {
-    final imageFile = File(result.imagePath);
-    if (await isConnected()) {
-      await FirebaseService.uploadDetectionResult(
-        userId: userId,
-        hasil: result.label,
-        confidence: result.confidence,
-        imageFile: imageFile,
-      );
-    } else {
-      await OfflineQueue.addToQueue(detectionData);
-      print("Tidak ada koneksi. Disimpan ke antrean offline.");
+  Future<void> saveDetectionResultWithImage(
+      String userId, Result result) async {
+    if (_isUploading || _hasSavedResult) {
+      print("Skip saving: already uploading or saved.");
+      return;
     }
 
-    final detectionItem = RiwayatItem(
-      label: result.label,
-      latinName: result.latinName,
-      confidence: result.confidence,
-      description: result.description,
-      handling: result.handling,
-      imagePath: result.imagePath,
-      kandungan: result.kandungan,
-      rekomendasiTanaman: result.rekomendasiTanaman,
-      timestamp: DateTime.now(),
-    );
-    RiwayatStorage.addRiwayat(detectionItem);
+    _isUploading = true;
+    _hasSavedResult =
+        true; // Pindah flag ini jadi true duluan supaya dipanggil kedua kali langsung skip
 
-  } catch (e) {
-    print("Error saat simpan hasil deteksi: $e");
-    _hasSavedResult = false; // Reset kalau gagal agar bisa coba lagi
-  } finally {
-    _isUploading = false;
+    final detectionData = {
+      "userId": userId,
+      "hasil": result.label,
+      "confidence": result.confidence,
+      "imagePath": result.imagePath,
+      "timestamp": DateTime.now().toIso8601String()
+    };
+
+    try {
+      final imageFile = File(result.imagePath);
+      String imageUrl = result.imagePath;
+
+      if (await isConnected()) {
+        imageUrl = await FirebaseService.uploadDetectionResult(
+          userId: userId,
+          hasil: result.label,
+          confidence: result.confidence,
+          imageFile: imageFile,
+        );
+
+        // Jika upload gagal dan URL kosong, fallback ke path lokal
+        if (imageUrl.isEmpty) {
+          print("⚠️ Upload gagal, gunakan path lokal.");
+          imageUrl = result.imagePath;
+        }
+      } else {
+        await OfflineQueue.addToQueue(detectionData);
+        print("Tidak ada koneksi. Disimpan ke antrean offline.");
+      }
+
+      final detectionItem = RiwayatItem(
+        label: result.label,
+        latinName: result.latinName,
+        confidence: result.confidence,
+        description: result.description,
+        handling: result.handling,
+        imagePath: imageUrl,
+        kandungan: result.kandungan,
+        rekomendasiTanaman: result.rekomendasiTanaman,
+        timestamp: DateTime.now(),
+      );
+      RiwayatStorage.addRiwayat(detectionItem);
+      
+    } catch (e) {
+      print("Error saat simpan hasil deteksi: $e");
+      _hasSavedResult = false; // Reset kalau gagal agar bisa coba lagi
+    } finally {
+      _isUploading = false;
+    }
   }
-}
 
   Future<bool> isConnected() async {
     var connectivityResult = await Connectivity().checkConnectivity();
