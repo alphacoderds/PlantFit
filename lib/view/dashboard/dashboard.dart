@@ -20,6 +20,7 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _loadLatestRiwayat();
+    _checkProfileCompleteness();
   }
 
   Future<void> _loadLatestRiwayat() async {
@@ -59,6 +60,65 @@ class _DashboardPageState extends State<DashboardPage> {
       });
     } catch (e) {
       print('❌ Gagal memuat riwayat dari Firestore: $e');
+    }
+  }
+
+  Future<void> _checkProfileCompleteness() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId == null) return;
+
+    final doc =
+        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+
+    if (!doc.exists) return;
+
+    final data = doc.data()!;
+    final name = data['name'] ?? '';
+    final phone = data['phone'] ?? '';
+    final gender = data['gender'] ?? '';
+    final location = data['location'] ?? '';
+
+    final isIncomplete =
+        name.isEmpty || phone.isEmpty || gender.isEmpty || location.isEmpty;
+
+    if (isIncomplete) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              title: Text(
+                "Profil Belum Lengkap",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF3E6606),
+                ),
+              ),
+              content: Text(
+                "Silakan lengkapi profil Anda terlebih dahulu untuk menggunakan aplikasi secara optimal.",
+                style: TextStyle(color: Colors.black87),
+                textAlign: TextAlign.center,
+              ),
+              actions: <Widget>[
+                TextButton(
+                  child: Text(
+                    "Isi Sekarang",
+                    style: TextStyle(color: Colors.green),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Tutup dialog
+                    Navigator.pushNamed(context, '/profile');
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      });
     }
   }
 
@@ -157,190 +217,194 @@ class _DashboardPageState extends State<DashboardPage> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Deteksi Terbaru',
-              style: GoogleFonts.lora(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3E6606),
-              ),
-            ),
-            SizedBox(height: 10),
-            SizedBox(
-              height: 140,
-              child: latestRiwayat.isEmpty
-                  ? Center(
-                      child: Text(
-                        'Belum ada hasil deteksi.',
-                        style: GoogleFonts.lora(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: latestRiwayat.length,
-                      itemBuilder: (context, index) {
-                        final item = latestRiwayat[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                          child: GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => HasilDeteksiPage(
-                                    label: item.label,
-                                    latinName: item.latinName,
-                                    confidence: item.confidence,
-                                    imagePath: item.imagePath,
-                                    rekomendasiTanaman: item.rekomendasiTanaman,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Deteksi Terbaru',
+                    style: GoogleFonts.lora(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF3E6606),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    height: 140,
+                    child: latestRiwayat.isEmpty
+                        ? Center(
+                            child: Text(
+                              'Belum ada hasil deteksi.',
+                              style: GoogleFonts.lora(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        : ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: latestRiwayat.length,
+                            itemBuilder: (context, index) {
+                              final item = latestRiwayat[index];
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => HasilDeteksiPage(
+                                          label: item.label,
+                                          latinName: item.latinName,
+                                          confidence: item.confidence,
+                                          imagePath: item.imagePath,
+                                          rekomendasiTanaman:
+                                              item.rekomendasiTanaman,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    width: 150,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black12,
+                                          blurRadius: 5,
+                                          offset: Offset(2, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        (item.imagePath ?? '').isNotEmpty
+                                            ? ClipRRect(
+                                                borderRadius:
+                                                    BorderRadius.circular(8),
+                                                child: Image.network(
+                                                  item.imagePath,
+                                                  width: 120,
+                                                  height: 100,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error,
+                                                          stackTrace) =>
+                                                      Icon(Icons.broken_image,
+                                                          color: Colors.grey),
+                                                ))
+                                            : Icon(Icons.landscape,
+                                                size: 50, color: Colors.green),
+                                        SizedBox(height: 5),
+                                        Text(
+                                          item.label,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               );
                             },
-                            child: Container(
-                              width: 150,
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(10),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 5,
-                                    offset: Offset(2, 2),
-                                  ),
-                                ],
+                          ),
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'Grafik Hasil Deteksi',
+                    style: GoogleFonts.lora(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF3E6606),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 6,
+                          offset: Offset(2, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        // Total Detections Card
+                        Container(
+                          padding: EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Color(0xFF3E6606).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Total Deteksi:',
+                                style: GoogleFonts.lora(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  (item.imagePath ?? '').isNotEmpty
-                                      ? ClipRRect(
-                                          borderRadius:
-                                              BorderRadius.circular(8),
-                                          child: Image.network(
-                                            item.imagePath,
-                                            width: 120,
-                                            height: 100,
-                                            fit: BoxFit.cover,
-                                            errorBuilder:
-                                                (context, error, stackTrace) =>
-                                                    Icon(Icons.broken_image,
-                                                        color: Colors.grey),
-                                          ))
-                                      : Icon(Icons.landscape,
-                                          size: 50, color: Colors.green),
-                                  SizedBox(height: 5),
-                                  Text(
-                                    item.label,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
+                              Text(
+                                '${latestRiwayat.length}',
+                                style: GoogleFonts.lora(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3E6606),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20),
+
+                        // Pie Chart dengan 5 jenis tanah
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Container(
+                            width: MediaQuery.of(context).size.width * 1.2,
+                            child: AspectRatio(
+                              aspectRatio: 1.6,
+                              child: PieChart(
+                                PieChartData(
+                                  sectionsSpace: 0,
+                                  centerSpaceRadius: 50,
+                                  startDegreeOffset: -90,
+                                  sections: _buildPieChartSections(
+                                      _countSoilTypes(latestRiwayat)),
+                                ),
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-            ),
-            SizedBox(height: 20),
-            Text(
-              'Grafik Hasil Deteksi',
-              style: GoogleFonts.lora(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF3E6606),
-              ),
-            ),
-            SizedBox(height: 10),
-            Container(
-              padding: EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black12,
-                    blurRadius: 6,
-                    offset: Offset(2, 4),
-                  ),
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Total Detections Card
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Color(0xFF3E6606).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Total Deteksi:',
-                          style: GoogleFonts.lora(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
                         ),
-                        Text(
-                          '${latestRiwayat.length}',
-                          style: GoogleFonts.lora(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF3E6606),
-                          ),
+                        SizedBox(height: 16),
+
+                        // Legend untuk 5 jenis tanah
+                        Wrap(
+                          alignment: WrapAlignment.center,
+                          spacing: 20,
+                          runSpacing: 10,
+                          children: _buildLegendItems(
+                              _countSoilTypes(latestRiwayat),
+                              latestRiwayat.length), // Tambahkan argumen kedua
                         ),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
-
-                  // Pie Chart dengan 5 jenis tanah
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 1.2,
-                      child: AspectRatio(
-                        aspectRatio: 1.6,
-                        child: PieChart(
-                          PieChartData(
-                            sectionsSpace: 0,
-                            centerSpaceRadius: 50,
-                            startDegreeOffset: -90,
-                            sections: _buildPieChartSections(
-                                _countSoilTypes(latestRiwayat)),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 16),
-
-                  // Legend untuk 5 jenis tanah
-                  Wrap(
-                    alignment: WrapAlignment.center,
-                    spacing: 20,
-                    runSpacing: 10,
-                    children: _buildLegendItems(_countSoilTypes(latestRiwayat),
-                        latestRiwayat.length), // Tambahkan argumen kedua
-                  ),
                 ],
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

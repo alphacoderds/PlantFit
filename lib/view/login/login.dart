@@ -4,6 +4,7 @@ import 'package:plantfit/view/login/register.dart';
 import 'package:plantfit/view/dashboard/homepage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -46,16 +47,34 @@ class _LoginPageState extends State<LoginPage> {
         User? user = userCredential.user;
 
         if (user != null && user.emailVerified) {
-          // Email sudah diverifikasi, lanjut ke halaman utama
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('saved_email', _emailController.text.trim());
           await prefs.setString(
               'saved_password', _passwordController.text.trim());
 
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => Navbar()),
-          );
+          // ✅ Cek apakah profil sudah lengkap
+          final doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(user.uid)
+              .get();
+          final data = doc.data();
+
+          final isProfileComplete = data != null &&
+              (data['name']?.isNotEmpty ?? false) &&
+              (data['phone']?.isNotEmpty ?? false) &&
+              (data['gender']?.isNotEmpty ?? false) &&
+              (data['location']?.isNotEmpty ?? false);
+
+          if (!isProfileComplete) {
+            // ✅ Arahkan user ke halaman edit profile
+            Navigator.pushReplacementNamed(context, '/profile');
+          } else {
+            // ✅ Jika profil lengkap, lanjut ke dashboard
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Navbar()),
+            );
+          }
         } else {
           // Email belum diverifikasi
           ScaffoldMessenger.of(context).showSnackBar(
@@ -96,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: const Color(0xFFF5FBEF), 
+        backgroundColor: const Color(0xFFF5FBEF),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),

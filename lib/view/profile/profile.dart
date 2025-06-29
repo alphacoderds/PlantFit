@@ -12,11 +12,11 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
-  // Ini data user
   String nama = "";
   String phoneNumber = "";
   String gender = "";
   String location = "";
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -37,6 +37,7 @@ class _ProfilePageState extends State<ProfilePage> {
         phoneNumber = data['phone'] ?? "";
         gender = data['gender'] ?? "";
         location = data['location'] ?? "";
+        isLoading = false; // selesai loading
       });
     }
   }
@@ -63,7 +64,9 @@ class _ProfilePageState extends State<ProfilePage> {
           ],
         ),
       ),
-      body: Padding(
+      body: isLoading
+    ? const Center(child: CircularProgressIndicator())
+      : Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -93,10 +96,12 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ),
                   const SizedBox(height: 10),
+                  if (!isLoading) ...[
                   ProfileDetail(title: 'Nama', value: nama),
                   ProfileDetail(title: 'Phone Number', value: phoneNumber),
                   ProfileDetail(title: 'Gender', value: gender),
                   ProfileDetail(title: 'Location', value: location),
+                ],
                 ],
               ),
             ),

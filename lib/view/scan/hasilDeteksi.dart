@@ -181,7 +181,7 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
                       color: Colors.grey[600],
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 4),
                   Row(
                     children: [
                       const Icon(Icons.verified, color: Colors.green, size: 18),
@@ -199,14 +199,9 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
               ),
             ),
             const SizedBox(height: 16),
-            
-            Container(
-              height: 200,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                color: Colors.grey[200],
-              ),
+
+            AspectRatio(
+              aspectRatio: 1, // rasio 1:1
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: isUrl
@@ -256,6 +251,22 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
               color: const Color(0xFF34A853),
               content: detailTanah?['pengelolaan'] ?? 'Data tidak tersedia',
             ),
+            const SizedBox(height: 20),
+            if (detailTanah?['characteristics'] != null && detailTanah!['characteristics'].toString().isNotEmpty)
+              _buildSection(
+                title: "Karakteristik Tanah",
+                icon: Icons.terrain,
+                color: const Color(0xFF6D4C41),
+                content: detailTanah!['characteristics'],
+              ),
+               if (detailTanah?['characteristics'] != null) const SizedBox(height: 20),
+            if (detailTanah?['handling'] != null && detailTanah!['handling'].toString().isNotEmpty)
+              _buildSection(
+                title: "Penanganan Tanah",
+                icon: Icons.build_circle_outlined,
+                color: const Color(0xFF1E88E5),
+                content: detailTanah!['handling'],
+              ),
             const SizedBox(height: 20),
 
             // Rekomendasi Tanaman
@@ -315,8 +326,9 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
             style: TextStyle(
               fontSize: 14,
               height: 1.6,
-              color: Colors.grey[800],
+              color: Colors.black,
             ),
+            textAlign: TextAlign.justify,
           ),
         ),
       ],

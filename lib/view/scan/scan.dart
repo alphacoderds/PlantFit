@@ -14,6 +14,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:plantfit/view/scan/offlineQueue.dart';
 
+
 class Result {
   final String label;
   final String latinName;
@@ -120,6 +121,7 @@ class _ScannerPageState extends State<ScannerPage> {
                 Navigator.of(context).pop(); // Menutup dialog
                 setState(() {
                   _lastImagePath = null; // Mengatur ulang gambar terakhir
+                  _hasDetected = false; // Mengatur ulang status deteksi});
                 });
               },
             ),
@@ -150,14 +152,30 @@ class _ScannerPageState extends State<ScannerPage> {
     }
   }
 
-  Future<String> _resizeImageTo150(String path) async {
+  Future<String> _cropAndResizeTo192(String path) async {
     final bytes = await File(path).readAsBytes();
     img.Image? image = img.decodeImage(bytes);
     if (image == null) throw Exception("Gagal decode image");
-    img.Image resized = img.copyResize(image, width: 150, height: 150);
 
+    // Crop ke square
+    int cropSize = image.width < image.height ? image.width : image.height;
+    int offsetX = (image.width - cropSize) ~/ 2;
+    int offsetY = (image.height - cropSize) ~/ 2;
+    img.Image cropped = img.copyCrop(
+  image,
+  x: offsetX,
+  y: offsetY,
+  width: cropSize,
+  height: cropSize,
+);
+
+
+
+    // Resize ke 192x192
+    img.Image resized = img.copyResize(cropped, width: 192, height: 192);
+
+    // Simpan hasil
     final resizedPath = path.replaceAll(RegExp(r'\.\w+$'), '_resized.jpg');
-
     await File(resizedPath).writeAsBytes(img.encodeJpg(resized));
     return resizedPath;
   }
@@ -165,7 +183,7 @@ class _ScannerPageState extends State<ScannerPage> {
   Future<void> loadModel() async {
     try {
       String? res = await Tflite.loadModel(
-        model: 'assets/model/my_newmodel290525.tflite',
+        model: 'assets/model/my_newmodel2406250808.tflite',
         labels: 'assets/model/labels.txt',
       );
       print("Model loaded successfully: $res");
@@ -181,7 +199,7 @@ class _ScannerPageState extends State<ScannerPage> {
 
   Future<Result?> predictUsingTFLite(String imagePath) async {
     try {
-      final resizedPath = await _resizeImageTo150(imagePath);
+      final resizedPath = await _cropAndResizeTo192(imagePath);
       final List<dynamic>? dynamicResults = await Tflite.runModelOnImage(
         path: resizedPath,
         imageMean: 0.0,
@@ -254,10 +272,6 @@ class _ScannerPageState extends State<ScannerPage> {
     );
   }
 
-  // Future<void> saveDetectionResultWithImage(
-  //     String userId, String hasil, double confidence, String imagePath) async {
-  //   if (_isUploading || _hasSavedResult) return;
-
   Future<void> saveDetectionResultWithImage(
       String userId, Result result) async {
     if (_isUploading || _hasSavedResult) {
@@ -311,7 +325,6 @@ class _ScannerPageState extends State<ScannerPage> {
         timestamp: DateTime.now(),
       );
       RiwayatStorage.addRiwayat(detectionItem);
-      
     } catch (e) {
       print("Error saat simpan hasil deteksi: $e");
       _hasSavedResult = false; // Reset kalau gagal agar bisa coba lagi
@@ -433,39 +446,25 @@ class _ScannerPageState extends State<ScannerPage> {
 
   Future<void> pickImageFromGallery() async {
     if (_isProcessing) return;
-    setState(() {
-      _isProcessing = true;
-      _hasSavedResult = false;
-    });
 
     try {
       final ImagePicker picker = ImagePicker();
       final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
       if (image != null) {
-        setState(() => _lastImagePath = image.path);
+        setState(() {
+          _isProcessing = true; // ✅ Mulai loading setelah user pilih gambar
+          _hasSavedResult = false;
+          _lastImagePath = image.path;
+        });
+
         final result = await predictUsingTFLite(image.path);
 
         if (result != null && result.confidence >= 0.4) {
-          final detectionItem = RiwayatItem(
-            label: result.label,
-            latinName: result.latinName,
-            confidence: result.confidence,
-            description: result.description,
-            handling: result.handling,
-            imagePath: result.imagePath,
-            kandungan: result.kandungan,
-            rekomendasiTanaman: result.rekomendasiTanaman,
-            timestamp: DateTime.now(),
-          );
-
-          // Ambil userId dari Firebase Auth
           final userId = FirebaseAuth.instance.currentUser?.uid;
           if (userId != null && !_hasSavedResult) {
             await saveDetectionResultWithImage(userId, result);
-            _hasSavedResult = true; // Tandai bahwa hasil sudah disimpan
-          } else {
-            print("User not logged in, cannot save detection result");
+            _hasSavedResult = true;
           }
 
           await Navigator.push(
@@ -492,8 +491,6 @@ class _ScannerPageState extends State<ScannerPage> {
         } else {
           _showUnrecognizedDialog();
         }
-      } else {
-        _showUnrecognizedDialog();
       }
     } catch (e) {
       print("Error picking image: $e");
@@ -571,7 +568,21 @@ class _ScannerPageState extends State<ScannerPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: _isProcessing
-                    ? Center(child: CircularProgressIndicator())
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            "Sedang memproses deteksi...",
+                            style: GoogleFonts.lora(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      )
                     : _lastImagePath != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(10),

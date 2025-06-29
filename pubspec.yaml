@@ -60,7 +60,6 @@ dev_dependencies:
   flutter_screenutil: ^5.9.0
   rename: ^3.0.1
   path_provider: ^2.0.15
-  flutter_barcode_scanner: ^2.0.0
   tflite_v2: ^1.0.0
   fl_chart: ^0.64.0
   image: ^4.0.15
@@ -134,6 +133,7 @@ flutter:
     - assets/model/model_bkedua.tflite
     - assets/model/my_newmodel9.46-280525.tflite
     - assets/model/my_newmodel290525.tflite
+    - assets/model/my_newmodel2406250808.tflite
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

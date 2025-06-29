@@ -4,29 +4,29 @@ class DataTanah {
       'nama': 'Alluvial',
       'latinName': 'Alluvium',
       'deskripsi':
-          'Tanah Alluvial merupakan tanah hasil endapan lumpur dari sungai yang biasanya berada di dataran rendah.',
+          'Tanah Alluvial terbentuk dari hasil sedimentasi material halus oleh aliran sungai. Biasanya terdapat di dataran rendah atau daerah cekungan sungai. Tanah ini umumnya baru, belum mengalami banyak pelapukan, dan sangat subur. Warnanya bisa bervariasi dari coklat tua hingga abu-abu tergantung sumber endapan.',
       'kandungan':
-          'Kaya unsur hara dan bahan organik, tekstur sedang hingga halus, sangat subur untuk pertanian.',
+          'Mengandung bahan organik tinggi, unsur hara makro dan mikro seperti nitrogen, fosfor, kalium, serta memiliki struktur yang baik dan aerasi cukup. Kadar air mudah diserap tanaman.',
       'pengelolaan':
-          'Pengolahan tanah secara berkala untuk mencegah pemadatan dan pengendalian gulma serta hama.',
+          'Walaupun sangat subur, tanah alluvial perlu diolah secara berkala untuk mencegah pemadatan akibat pengolahan intensif. Perlu dilakukan rotasi tanaman, pengendalian gulma dan drainase untuk menghindari erosi dan penyakit tanaman.',
       'rekomendasiTanaman':
           'Padi, Jagung, Bayam, Kangkung, Semangka, Melon, Tebu, Bawang Merah, Cabai',
-      'characteristics': 'Tanah endapan, subur, tekstur halus.',
-      'handling': 'Pengolahan berkala dan pengendalian gulma.'
+      'characteristics': 'Berasal dari endapan sungai, tekstur halus hingga sedang, gembur dan mudah diolah, cocok untuk pertanian intensif.',
+      'handling': 'Olah tanah secara teratur, lakukan rotasi tanaman, dan perhatikan sistem irigasi serta pemupukan organik.'
     },
     {
       'nama': 'Grumosol',
       'latinName': 'Grumusol',
       'deskripsi':
-          'Tanah Grumosol terbentuk dari batuan kapur atau tufa vulkanik, bersifat liat, berat, dan memiliki tingkat retakan saat kering.',
+          'Terbentuk dari batuan induk kapur dan tufa vulkanik. Tipe tanah ini cenderung berat, sangat lempung, dan memiliki struktur yang padat. Tanah akan pecah-pecah saat kering dan menjadi lengket saat basah.',
       'kandungan':
-          'Kaya akan lempung dan kation tukar, namun drainase buruk dan cenderung basa.',
+          'Kandungan mineral tinggi, terutama kation tukar dan kalsium. Cenderung basa, pH tinggi, dan memiliki kapasitas tukar kation yang baik, tapi aerasi dan drainasenya buruk.',
       'pengelolaan':
-          'Perlu pengolahan intensif, pengairan terkendali, serta pemupukan organik dan anorganik.',
+          'Dibutuhkan pengolahan mekanik intensif untuk memperbaiki struktur dan pori tanah. Drainase buatan kadang diperlukan. Pemupukan organik sangat dianjurkan untuk meningkatkan struktur dan kandungan hara tanah.',
       'rekomendasiTanaman':
           'Padi, Tebu, Kapas, Jagung, Kedelai, Ubi Jalar, Kacang Hijau, Cengkeh, Kakao, Karet',
-      'characteristics': 'Berwarna hitam hingga kelabu, retak saat kering.',
-      'handling': 'Pengolahan intensif dan pengairan terkendali.'
+      'characteristics': 'Berwarna hitam atau kelabu, sangat lempung dan retak saat kering, cenderung basa, sulit menyerap air dengan cepat.',
+      'handling': 'Gunakan alat berat saat mengolah tanah, buat saluran drainase, serta tambahkan bahan organik untuk memperbaiki aerasi dan retensi air.'
     },
     {
       'nama': 'Laterit',
@@ -57,23 +57,23 @@ class DataTanah {
           'Tembakau, Tebu, Jagung Pulut, Kedelai, Kacang Tanah, Singkong, Cabai, Tomat, Semangka, Melon, Labu',
       'characteristics':
           'Tanah muda, bertekstur kasar, kandungan organik rendah.',
-      'handling': 'Perlu penambahan bahan organik dan pengairan teratur.'
+      'handling': 'Berikan pupuk organik dan dolomit secara berkala, tingkatkan drainase, dan hindari penanaman tanaman yang membutuhkan banyak unsur hara.'
     },
     {
       'nama': 'Vertisol',
       'latinName': 'Vertisol',
       'deskripsi':
-          'Tanah Vertisol adalah tanah liat berat yang sangat lengket saat basah dan retak besar saat kering.',
+          'Tanah Vertisol adalah tanah liat berat yang mengalami perubahan volume besar akibat pergantian musim basah dan kering. Memiliki retakan besar saat kering dan sangat lengket saat basah.',
       'kandungan':
-          'Tinggi kandungan lempung montmorillonit, kaya unsur hara namun sulit diolah.',
+          'Tinggi lempung montmorillonit dan kation tukar. Kandungan hara baik, namun drainase dan aerasi buruk karena struktur yang terlalu padat.',
       'pengelolaan':
-          'Perlu pengolahan saat kadar air optimum, penambahan bahan organik untuk memperbaiki struktur.',
+          'Harus diolah pada saat kadar air optimal (tidak terlalu kering atau basah). Diperlukan penambahan bahan organik untuk memperbaiki struktur dan mengurangi kerekahan tanah saat musim kering.',
       'rekomendasiTanaman':
           'Padi, Kapas, Sorgum, Jagung, Kedelai, Tomat, Bawang Merah, Gandum, Melon, Semangka',
       'characteristics':
-          'Liat berat, retak besar saat kering, lengket saat basah.',
+          'Liat berat, retak besar saat kering, lengket saat basah, berwarna kelabu gelap hingga coklat tua, menyusut dan mengembang ekstrem.',
       'handling':
-          'Olah tanah saat kadar air optimal dan tambahkan bahan organik.'
+          'Waktu olah tanah sangat penting (harus lembab), tambahkan bahan organik, dan hindari pengolahan saat tanah basah ekstrem atau sangat kering.'
     },
   ];
  Map<String, dynamic>? getDetailByNama(String nama) {

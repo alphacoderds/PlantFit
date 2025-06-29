@@ -5,6 +5,7 @@ import 'package:plantfit/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:plantfit/view/login/login.dart';
 import 'package:plantfit/view/dashboard/homepage.dart';
+import 'package:plantfit/view/profile/editprofile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
@@ -26,6 +27,17 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: SplashScreen(), 
+
+         routes: {
+        '/login': (context) => const LoginPage(),
+        '/dashboard': (context) => Navbar(),
+        '/profile': (context) => EditProfilePage(
+              nameController: TextEditingController(),
+              phoneNumberController: TextEditingController(),
+              genderController: TextEditingController(),
+              locationController: TextEditingController(),
+            ),
+      },
     );
   }
 }
