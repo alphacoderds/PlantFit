@@ -14,7 +14,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:plantfit/view/scan/offlineQueue.dart';
 
-
 class Result {
   final String label;
   final String latinName;
@@ -162,14 +161,12 @@ class _ScannerPageState extends State<ScannerPage> {
     int offsetX = (image.width - cropSize) ~/ 2;
     int offsetY = (image.height - cropSize) ~/ 2;
     img.Image cropped = img.copyCrop(
-  image,
-  x: offsetX,
-  y: offsetY,
-  width: cropSize,
-  height: cropSize,
-);
-
-
+      image,
+      x: offsetX,
+      y: offsetY,
+      width: cropSize,
+      height: cropSize,
+    );
 
     // Resize ke 192x192
     img.Image resized = img.copyResize(cropped, width: 192, height: 192);
@@ -183,7 +180,7 @@ class _ScannerPageState extends State<ScannerPage> {
   Future<void> loadModel() async {
     try {
       String? res = await Tflite.loadModel(
-        model: 'assets/model/my_newmodel2406250808.tflite',
+        model: 'assets/model/my_newmodel6class140725_9444.tflite',
         labels: 'assets/model/labels.txt',
       );
       print("Model loaded successfully: $res");
@@ -220,6 +217,11 @@ class _ScannerPageState extends State<ScannerPage> {
           .replaceAll(RegExp(r'[0-9]'), '')
           .trim();
       final double confidence = dynamicResults[0]['confidence'] as double;
+
+      if (label.toLowerCase() == 'nontanah') {
+        print("Deteksi: Gambar bukan tanah");
+        return null;
+      }
 
       // Pastikan predictionIndex valid
       if (predictionIndex < 0 ||
@@ -453,7 +455,7 @@ class _ScannerPageState extends State<ScannerPage> {
 
       if (image != null) {
         setState(() {
-          _isProcessing = true; // ✅ Mulai loading setelah user pilih gambar
+          _isProcessing = true; // Mulai loading setelah user pilih gambar
           _hasSavedResult = false;
           _lastImagePath = image.path;
         });

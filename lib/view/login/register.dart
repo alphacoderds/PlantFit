@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:plantfit/view/login/emailVerification.dart';
 import 'package:plantfit/view/login/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:plantfit/view/profile/editprofile.dart';
 
 // Halaman pendaftaran pengguna dengan Firebase Auth
 class RegisterPage extends StatefulWidget {
@@ -39,18 +40,18 @@ class _RegisterPageState extends State<RegisterPage> {
         );
         return;
       }
-      // Validasi email dan password
+
       try {
         FirebaseAuth.instance.setLanguageCode("id");
 
-//Daftarkan pengguna baru
+        // Coba daftar akun
         UserCredential userCredential =
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
 
-        // Tambahkan kode ini untuk buat dokumen user di Firestore
+        // Buat data user di Firestore
         if (userCredential.user != null) {
           await FirebaseFirestore.instance
               .collection('users')
@@ -58,13 +59,11 @@ class _RegisterPageState extends State<RegisterPage> {
               .set({
             'email': _emailController.text.trim(),
             'detectedAt': FieldValue.serverTimestamp(),
-            // Kamu bisa tambahkan field lain kalau mau
           });
         }
 
-// ✅ Kirim email verifikasi
-        if (userCredential.user != null &&
-            !userCredential.user!.emailVerified) {
+        // Kirim verifikasi email
+        if (!userCredential.user!.emailVerified) {
           await userCredential.user!.sendEmailVerification();
 
           ScaffoldMessenger.of(context).showSnackBar(
@@ -83,20 +82,71 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         );
       } on FirebaseAuthException catch (e) {
-        String message;
+        // Jika email sudah digunakan, coba login
         if (e.code == 'email-already-in-use') {
-          message = 'Email already in use.';
+          try {
+            final signInCheck =
+                await FirebaseAuth.instance.signInWithEmailAndPassword(
+              email: _emailController.text.trim(),
+              password: _passwordController.text.trim(),
+            );
+
+            if (!signInCheck.user!.emailVerified) {
+              await signInCheck.user!.sendEmailVerification();
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                      'Akun sudah terdaftar tapi belum diverifikasi. Verifikasi email telah dikirim ulang.'),
+                  backgroundColor: Colors.orange,
+                ),
+              );
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const EmailVerificationPage(),
+                ),
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Akun sudah terdaftar. Silakan login.'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const LoginPage(),
+                ),
+              );
+            }
+          } catch (_) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                    'Email sudah digunakan, tetapi tidak bisa login. Gunakan email lain atau reset password.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         } else if (e.code == 'weak-password') {
-          message = 'Password is too weak.';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Password terlalu lemah.'),
+              backgroundColor: Colors.red,
+            ),
+          );
         } else {
-          message = 'Registration failed: ${e.message}';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Registrasi gagal: ${e.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
         }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.red,
-          ),
-        );
       }
     }
   }

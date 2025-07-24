@@ -42,8 +42,9 @@ class _NavbarState extends State<Navbar> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: List.generate(5, (index) {
-            if (index == 2) return const SizedBox(width: 20); // Ruang untuk FAB
+            if (index == 2) return const SizedBox(width: 20);
             return Expanded(
+              // icon menu
               child: buildNavBarItem(
                 [
                   CupertinoIcons.home,
@@ -64,7 +65,8 @@ class _NavbarState extends State<Navbar> {
           color: Colors.green[900],
           elevation: 10,
           child: InkWell(
-            onTap: () => _onItemTapped(2), // Pindah ke halaman Scanner
+            // menuju halaman Scanner
+            onTap: () => _onItemTapped(2), 
             child: const SizedBox(
               width: 56,
               height: 56,

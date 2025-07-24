@@ -14,7 +14,7 @@ class RiwayatStorage {
 
   /// Mendapatkan semua riwayat
   static List<RiwayatItem> getAllRiwayat() {
-    return List.from(_riwayatList); // Return copy of list
+    return List.from(_riwayatList); 
   }
 
   /// Menghapus semua riwayat

@@ -128,12 +128,7 @@ flutter:
     - assets/images/rekomendasi/tomat.png
     - assets/images/rekomendasi/ubijalar.png
     - assets/model/labels.txt
-    - assets/model/my_model.tflite
-    - assets/model/model_b.tflite
-    - assets/model/model_bkedua.tflite
-    - assets/model/my_newmodel9.46-280525.tflite
-    - assets/model/my_newmodel290525.tflite
-    - assets/model/my_newmodel2406250808.tflite
+    - assets/model/my_newmodel6class140725_9444.tflite
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

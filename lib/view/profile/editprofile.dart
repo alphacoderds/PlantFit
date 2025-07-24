@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:plantfit/view/dashboard/homepage.dart';
 
 class EditProfilePage extends StatefulWidget {
   final TextEditingController nameController;
   final TextEditingController phoneNumberController;
   final TextEditingController genderController;
   final TextEditingController locationController;
+  final bool isFromSignup;
 
   const EditProfilePage({
     Key? key,
@@ -15,6 +17,8 @@ class EditProfilePage extends StatefulWidget {
     required this.phoneNumberController,
     required this.genderController,
     required this.locationController,
+    this.isFromSignup =
+        false, // Tambahkan parameter ini untuk menandai apakah dari pendaftaran
   }) : super(key: key);
 
   @override
@@ -89,10 +93,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
                     .doc(userId)
                     .set(updatedProfile, SetOptions(merge: true));
 
-                Navigator.pop(context, updatedProfile);
+                if (widget.isFromSignup) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => Navbar()),
+                  );
+                } else {
+                  Navigator.pop(context, updatedProfile);
+                }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green[900],
+                backgroundColor: Color(0xFF3E6606),
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text("Save", style: TextStyle(color: Colors.white)),

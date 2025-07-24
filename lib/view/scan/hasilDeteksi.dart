@@ -201,13 +201,30 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
             const SizedBox(height: 16),
 
             AspectRatio(
-              aspectRatio: 1, // rasio 1:1
+              aspectRatio: 1,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: isUrl
                     ? Image.network(
                         widget.imagePath,
                         fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: SizedBox(
+                              width: 30,
+                              height: 30,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                value: loadingProgress.expectedTotalBytes !=
+                                        null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
                         errorBuilder: (context, error, stackTrace) =>
                             const Center(child: Text("Gagal memuat gambar.")),
                       )
@@ -252,15 +269,18 @@ class _HasilDeteksiPageState extends State<HasilDeteksiPage> {
               content: detailTanah?['pengelolaan'] ?? 'Data tidak tersedia',
             ),
             const SizedBox(height: 20),
-            if (detailTanah?['characteristics'] != null && detailTanah!['characteristics'].toString().isNotEmpty)
+            if (detailTanah?['characteristics'] != null &&
+                detailTanah!['characteristics'].toString().isNotEmpty)
               _buildSection(
                 title: "Karakteristik Tanah",
                 icon: Icons.terrain,
                 color: const Color(0xFF6D4C41),
                 content: detailTanah!['characteristics'],
               ),
-               if (detailTanah?['characteristics'] != null) const SizedBox(height: 20),
-            if (detailTanah?['handling'] != null && detailTanah!['handling'].toString().isNotEmpty)
+            if (detailTanah?['characteristics'] != null)
+              const SizedBox(height: 20),
+            if (detailTanah?['handling'] != null &&
+                detailTanah!['handling'].toString().isNotEmpty)
               _buildSection(
                 title: "Penanganan Tanah",
                 icon: Icons.build_circle_outlined,

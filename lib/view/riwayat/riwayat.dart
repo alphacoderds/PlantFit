@@ -63,9 +63,8 @@ class _RiwayatPageState extends State<RiwayatPage> {
     });
 
     try {
-      final snapshot = await _riwayatCollection
-          .orderBy('timestamp', descending: true)
-          .get();
+      final snapshot =
+          await _riwayatCollection.orderBy('timestamp', descending: true).get();
 
       final riwayatList = snapshot.docs.map((doc) {
         final data = doc.data() as Map<String, dynamic>;
@@ -216,13 +215,42 @@ class _RiwayatPageState extends State<RiwayatPage> {
                             horizontal: 12, vertical: 6),
                         child: ListTile(
                           leading: item.imagePath.isNotEmpty
-                              ? Image.network(
-                                  item.imagePath,
-                                  width: 60,
-                                  height: 60,
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
-                                      const Icon(Icons.error),
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: SizedBox(
+                                    width: 60,
+                                    height: 60,
+                                    child: Image.network(
+                                      item.imagePath,
+                                      fit: BoxFit.cover,
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                        if (loadingProgress == null)
+                                          return child;
+                                        return Center(
+                                          child: SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              value: loadingProgress
+                                                          .expectedTotalBytes !=
+                                                      null
+                                                  ? loadingProgress
+                                                          .cumulativeBytesLoaded /
+                                                      loadingProgress
+                                                          .expectedTotalBytes!
+                                                  : null,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              const Icon(Icons.broken_image,
+                                                  color: Colors.grey),
+                                    ),
+                                  ),
                                 )
                               : const Icon(Icons.image),
                           title: Text(
@@ -244,8 +272,7 @@ class _RiwayatPageState extends State<RiwayatPage> {
                                   latinName: item.latinName,
                                   confidence: item.confidence,
                                   imagePath: item.imagePath,
-                                  rekomendasiTanaman:
-                                      item.rekomendasiTanaman,
+                                  rekomendasiTanaman: item.rekomendasiTanaman,
                                 ),
                               ),
                             );

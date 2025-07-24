@@ -25,16 +25,6 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
   }
 
-  void _saveEmail(String email) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> accounts = prefs.getStringList('saved_emails') ?? [];
-
-    if (!accounts.contains(email)) {
-      accounts.add(email);
-      await prefs.setStringList('saved_emails', accounts);
-    }
-  }
-
   void _login() async {
     if (_formKey.currentState!.validate()) {
       try {
@@ -48,11 +38,8 @@ class _LoginPageState extends State<LoginPage> {
 
         if (user != null && user.emailVerified) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('saved_email', _emailController.text.trim());
-          await prefs.setString(
-              'saved_password', _passwordController.text.trim());
 
-          // ✅ Cek apakah profil sudah lengkap
+          // Cek apakah profil sudah lengkap
           final doc = await FirebaseFirestore.instance
               .collection('users')
               .doc(user.uid)
@@ -66,10 +53,10 @@ class _LoginPageState extends State<LoginPage> {
               (data['location']?.isNotEmpty ?? false);
 
           if (!isProfileComplete) {
-            // ✅ Arahkan user ke halaman edit profile
+            // Arahkan user ke halaman edit profile
             Navigator.pushReplacementNamed(context, '/profile');
           } else {
-            // ✅ Jika profil lengkap, lanjut ke dashboard
+            // Jika profil lengkap, lanjut ke dashboard
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => Navbar()),

@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:plantfit/view/profile/editprofile.dart';
 
 class EmailVerificationPage extends StatefulWidget {
   const EmailVerificationPage({Key? key}) : super(key: key);
@@ -10,6 +12,52 @@ class EmailVerificationPage extends StatefulWidget {
 
 class _EmailVerificationPageState extends State<EmailVerificationPage> {
   bool _isResending = false;
+  Timer? _checkEmailTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Cek email setiap 3 detik
+    _checkEmailTimer = Timer.periodic(Duration(seconds: 3), (_) async {
+      await FirebaseAuth.instance.currentUser?.reload();
+      var user = FirebaseAuth.instance.currentUser;
+
+      if (user != null && user.emailVerified) {
+        _checkEmailTimer?.cancel();
+
+        if (!mounted) return;
+
+        // Tampilkan SnackBar
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Verifikasi berhasil! Silakan lengkapi profil.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // Navigasi ke halaman EditProfile
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => EditProfilePage(
+              nameController: TextEditingController(),
+              phoneNumberController: TextEditingController(),
+              genderController: TextEditingController(),
+              locationController: TextEditingController(),
+              isFromSignup: true,
+            ),
+          ),
+        );
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _checkEmailTimer?.cancel();
+    super.dispose();
+  }
 
   Future<void> _resendVerificationEmail() async {
     setState(() => _isResending = true);
@@ -18,12 +66,12 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
       if (user != null && !user.emailVerified) {
         await user.sendEmailVerification();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Verification email has been resent.')),
+          SnackBar(content: Text('Email verifikasi telah dikirim ulang.')),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to resend email: $e')),
+        SnackBar(content: Text('Gagal mengirim ulang email: $e')),
       );
     } finally {
       setState(() => _isResending = false);
@@ -44,7 +92,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Image.asset(
-                'assets/images/emailVerification.png', 
+                'assets/images/emailVerification.png',
                 height: screenHeight * 0.3,
               ),
               SizedBox(height: screenHeight * 0.04),
@@ -58,7 +106,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               ),
               SizedBox(height: screenHeight * 0.02),
               Text(
-                "A verification link has been sent to your email.\nPlease click the link to complete your registration.",
+                "Tautan verifikasi telah dikirim ke email Anda.\nKlik tautan tersebut untuk melanjutkan.",
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: screenWidth * 0.04,
@@ -70,8 +118,8 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                 onTap: _isResending ? null : _resendVerificationEmail,
                 child: Text(
                   _isResending
-                      ? "Resending..."
-                      : "Didn't receive the email? Resend Email",
+                      ? "Mengirim ulang..."
+                      : "Belum menerima email? Kirim ulang verifikasi",
                   style: TextStyle(
                     color: Color(0xFF4D6A3F),
                     fontWeight: FontWeight.bold,
@@ -84,8 +132,9 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
-                  onPressed: () {
-                    Navigator.pop(context); // kembali ke halaman sebelumnya
+                  onPressed: () async {
+                    await FirebaseAuth.instance.signOut();
+                    Navigator.pop(context);
                   },
                   style: OutlinedButton.styleFrom(
                     side: BorderSide(color: Color(0xFF4D6A3F)),
@@ -94,7 +143,7 @@ class _EmailVerificationPageState extends State<EmailVerificationPage> {
                     ),
                   ),
                   child: Text(
-                    'BACK',
+                    'LOGOUT',
                     style: TextStyle(
                       fontSize: screenWidth * 0.045,
                       fontWeight: FontWeight.bold,

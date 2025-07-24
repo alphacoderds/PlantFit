@@ -45,6 +45,16 @@ class DataTanah {
           'Pemupukan intensif, penambahan kapur, dan pengelolaan air yang baik.'
     },
     {
+    'nama': 'NonTanah',
+    'latinName': '',
+    'deskripsi': 'Gambar yang terdeteksi bukan tanah.',
+    'kandungan': '',
+    'pengelolaan': '',
+    'rekomendasiTanaman': '',
+    'characteristics': '',
+    'handling': ''
+    },
+    {
       'nama': 'Regosol',
       'latinName': 'Regosol',
       'deskripsi':

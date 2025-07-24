@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({Key? key}) : super(key: key);
+
   @override
   State<ProfilePage> createState() => _ProfilePageState();
 }
@@ -25,20 +27,43 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> getUserProfile() async {
-    final userId =
-        FirebaseAuth.instance.currentUser?.uid ?? 'guest'; // sesuaikan
-    final doc =
-        await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      // Belum login → langsung arahkan ke login page
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+      return;
+    }
 
-    if (doc.exists) {
-      final data = doc.data()!;
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
+
+      if (doc.exists) {
+        final data = doc.data()!;
+        setState(() {
+          nama = data['name'] ?? "";
+          phoneNumber = data['phone'] ?? "";
+          gender = data['gender'] ?? "";
+          location = data['location'] ?? "";
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } catch (e) {
       setState(() {
-        nama = data['name'] ?? "";
-        phoneNumber = data['phone'] ?? "";
-        gender = data['gender'] ?? "";
-        location = data['location'] ?? "";
-        isLoading = false; // selesai loading
+        isLoading = false;
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal memuat profil: $e')),
+      );
     }
   }
 
@@ -65,127 +90,134 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
       ),
       body: isLoading
-    ? const Center(child: CircularProgressIndicator())
-      : Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const CircleAvatar(
-              radius: 50,
-              backgroundColor: Color(0xFF3E6606),
-              child: Icon(Icons.person, size: 50, color: Colors.white),
-            ),
-            const SizedBox(height: 20),
-            Container(
-              width: double.infinity,
+          ? const Center(child: CircularProgressIndicator())
+          : Padding(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3E6606),
-                borderRadius: BorderRadius.circular(12),
-              ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Text(
-                    'Profile',
-                    style: GoogleFonts.lora(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Colors.white,
+                  const CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Color(0xFF3E6606),
+                    child: Icon(Icons.person, size: 50, color: Colors.white),
+                  ),
+                  const SizedBox(height: 20),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3E6606),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Profile',
+                          style: GoogleFonts.lora(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        if (!isLoading) ...[
+                          ProfileDetail(title: 'Nama', value: nama),
+                          ProfileDetail(
+                              title: 'Phone Number', value: phoneNumber),
+                          ProfileDetail(title: 'Gender', value: gender),
+                          ProfileDetail(title: 'Location', value: location),
+                        ],
+                      ],
                     ),
                   ),
                   const SizedBox(height: 10),
-                  if (!isLoading) ...[
-                  ProfileDetail(title: 'Nama', value: nama),
-                  ProfileDetail(title: 'Phone Number', value: phoneNumber),
-                  ProfileDetail(title: 'Gender', value: gender),
-                  ProfileDetail(title: 'Location', value: location),
-                ],
-                ],
-              ),
-            ),
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AboutPage()),
-                );
-              },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF3E6606),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.info_outline, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Tentang kami',
-                      style: GoogleFonts.lora(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => AboutPage()),
+                      );
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3E6606),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.info_outline, color: Colors.white),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Tentang kami',
+                            style: GoogleFonts.lora(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 20),
+                  ProfileButton(
+                    text: 'Edit Profile',
+                    onPressed: () async {
+                      // Pergi ke EditProfilePage dan tunggu hasilnya
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditProfilePage(
+                            nameController: TextEditingController(text: nama),
+                            phoneNumberController:
+                                TextEditingController(text: phoneNumber),
+                            genderController:
+                                TextEditingController(text: gender),
+                            locationController:
+                                TextEditingController(text: location),
+                          ),
+                        ),
+                      );
+
+                      // Kalau ada data dikembalikan
+                      if (result != null) {
+                        setState(() {
+                          nama = result[
+                              'name']; // Sesuaikan key dari EditProfilePage
+                          phoneNumber = result['phone'];
+                          gender = result['gender'];
+                          location = result['location'];
+                        });
+
+                        // Option: munculkan SnackBar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Profile berhasil diperbarui!')),
+                        );
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  ProfileButton(
+                    text: 'Logout',
+                    onPressed: () async {
+                      await FirebaseAuth.instance
+                          .signOut(); // keluar dari sesi login
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => const LoginPage()),
+                        (route) => false,
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
-            ProfileButton(
-              text: 'Edit Profile',
-              onPressed: () async {
-                // Pergi ke EditProfilePage dan tunggu hasilnya
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EditProfilePage(
-                      nameController: TextEditingController(text: nama),
-                      phoneNumberController:
-                          TextEditingController(text: phoneNumber),
-                      genderController: TextEditingController(text: gender),
-                      locationController: TextEditingController(text: location),
-                    ),
-                  ),
-                );
-
-                // Kalau ada data dikembalikan
-                if (result != null) {
-                  setState(() {
-                    nama = result['name']; // Sesuaikan key dari EditProfilePage
-                    phoneNumber = result['phone'];
-                    gender = result['gender'];
-                    location = result['location'];
-                  });
-
-                  // Option: munculkan SnackBar
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Profile berhasil diperbarui!')),
-                  );
-                }
-              },
-            ),
-            const SizedBox(height: 10),
-            ProfileButton(
-              text: 'Logout',
-              onPressed: () async {
-                await FirebaseAuth.instance.signOut(); // keluar dari sesi login
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
-                  (route) => false,
-                );
-              },
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

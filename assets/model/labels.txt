@@ -1,5 +1,6 @@
 Alluvial
 Grumosol
 Laterit
+NonTanah
 Regosol
 Vertisol
