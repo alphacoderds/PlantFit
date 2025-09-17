@@ -43,3 +43,7 @@
 - **Google Cloud Platform** – Cloud Run, Cloud Storage, IAM
   
 ---
+
+## 📌 Poster
+
+![Poster PlantFit](Poster%20Plantfit.png)
