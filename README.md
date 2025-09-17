@@ -46,4 +46,5 @@
 
 ## 📌 Poster
 
-![Poster PlantFit](Poster%20Plantfit.png)
+![Poster PlantFit](Poster%20Plantfit.svg)
+
